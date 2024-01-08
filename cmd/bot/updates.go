@@ -11,11 +11,10 @@ import (
 func registerHandlers(bh *th.BotHandler, app *config.AppConfig) {
 	// Global commands
 	bh.Handle(handlers.StartCommandHandler, th.CommandEqual("start"))
+	bh.Handle(handlers.HelpCommandHandler, th.CommandEqual("help"))
 
 	// Admin commands
-	bh.Handle(handlers.AdminPostHandler, th.And(
-		th.CommandEqual("post"),
-		predicates.Admin(app)))
+	bh.Handle(handlers.AdminPostCommandHandler, th.And(th.CommandEqual("post"), predicates.Admin(app)))
 
 	// Not recognized commands
 	bh.Handle(handlers.UnknownCommandHandler, th.AnyCommand())

@@ -4,20 +4,21 @@ import (
 	"fmt"
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/responses"
 )
 
 // AnyMessageHandler handles all the message that are not commands
 func AnyMessageHandler(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(tu.Message(
 		tu.ID(update.Message.Chat.ID),
-		fmt.Sprintf("Use commands to interact with me")))
+		responses.UseCommands))
 }
 
 // StartCommandHandler handles the /start command
 func StartCommandHandler(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(tu.Message(
 		tu.ID(update.Message.Chat.ID),
-		fmt.Sprintf("Hello %s!", update.Message.From.FirstName),
+		responses.StartResponse,
 	))
 }
 
@@ -25,12 +26,19 @@ func StartCommandHandler(bot *telego.Bot, update telego.Update) {
 func UnknownCommandHandler(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(tu.Message(
 		tu.ID(update.Message.Chat.ID),
-		fmt.Sprintf("Unknown command, use /start")))
+		responses.UnknownCommand))
 }
 
-// AdminPostHandler handles the /post admin command
-func AdminPostHandler(bot *telego.Bot, update telego.Update) {
+// AdminPostCommandHandler handles the /post admin command
+func AdminPostCommandHandler(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(tu.Message(
 		tu.ID(update.Message.Chat.ID),
 		fmt.Sprintf("Admin command")))
+}
+
+// HelpCommandHandler handles the /help command
+func HelpCommandHandler(bot *telego.Bot, update telego.Update) {
+	_, _ = bot.SendMessage(tu.Message(
+		tu.ID(update.Message.Chat.ID),
+		responses.HelpResponse))
 }

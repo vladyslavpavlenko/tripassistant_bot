@@ -1,7 +1,6 @@
 # General
 .DS_Store
 .env
-.sh
 
 # Binaries for programs and plugins
 *.exe
@@ -22,3 +21,5 @@
 # Go workspace file
 go.work
 .idea
+/bot
+/run.sh
