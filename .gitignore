@@ -1,5 +1,7 @@
 # General
 .DS_Store
+.env
+.sh
 
 # Binaries for programs and plugins
 *.exe
