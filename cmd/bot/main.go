@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var app config.AppConfig
@@ -39,9 +40,14 @@ func run() (*telego.Bot, *th.BotHandler, error) {
 
 	// Get environment variables
 	botToken := os.Getenv("TOKEN")
-	adminID := os.Getenv("ADMIN_ID")
+	adminIDsStr := os.Getenv("ADMIN_IDS")
 
-	app.AdminID, _ = strconv.ParseInt(adminID, 10, 64)
+	adminIDsSlice := strings.Split(adminIDsStr, ",")
+
+	for _, idStr := range adminIDsSlice {
+		adminID, _ := strconv.ParseInt(idStr, 10, 64)
+		app.AdminIDs = append(app.AdminIDs, adminID)
+	}
 
 	fmt.Println("Starting bot...")
 

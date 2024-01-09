@@ -6,6 +6,6 @@ import (
 
 // AppConfig holds the application config
 type AppConfig struct {
-	AdminID int64
-	Logger  *logger.MyLogger
+	AdminIDs []int64
+	Logger   *logger.MyLogger
 }
