@@ -14,8 +14,24 @@ func registerHandlers(bh *th.BotHandler, app *config.AppConfig) {
 	bh.Handle(handlers.HelpCommandHandler, th.CommandEqual("help"))
 
 	bh.Handle(handlers.AddPlaceCommandHandler, th.And(th.CommandEqual("addplace"), predicates.ChatType("group"), predicates.Reply()))
-	bh.Handle(handlers.CommandMisuseHandler, th.And(th.CommandEqual("addplace"), predicates.ChatType("group")))
-	bh.Handle(handlers.CommandWrongChatHandler, th.And(th.CommandEqual("addplace")))
+	bh.Handle(handlers.RemovePlaceCommandHandler, th.And(th.CommandEqual("removeplace"), predicates.ChatType("group"), predicates.Reply()))
+
+	bh.Handle(handlers.CommandMisuseHandler,
+		th.And(
+			th.Or(
+				th.CommandEqual("randomplace"),
+				th.CommandEqual("removeplace"),
+			),
+			predicates.ChatType("group"),
+		),
+	)
+
+	bh.Handle(handlers.CommandWrongChatHandler,
+		th.Or(
+			th.CommandEqual("randomplace"),
+			th.CommandEqual("removeplace"),
+		),
+	)
 
 	// Admin commands
 	bh.Handle(handlers.AdminPostCommandHandler, th.And(predicates.Admin(app), th.CommandEqual("post")))

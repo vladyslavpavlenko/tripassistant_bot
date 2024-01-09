@@ -81,9 +81,22 @@ func HelpCommandHandler(bot *telego.Bot, update telego.Update) {
 // AddPlaceCommandHandler handles the /addplace command
 func AddPlaceCommandHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
-		ChatID:    tu.ID(update.Message.Chat.ID),
-		Text:      fmt.Sprintf("It's a group, and the command was sent in a reply to some message. Nice!"),
-		ParseMode: "HTML",
+		ChatID:           tu.ID(update.Message.Chat.ID),
+		ReplyToMessageID: update.Message.MessageID,
+		Text:             fmt.Sprintf("/addplace TBD"),
+		ParseMode:        "HTML",
+	}
+
+	_, _ = bot.SendMessage(params)
+}
+
+// RemovePlaceCommandHandler handles the /removeplace command
+func RemovePlaceCommandHandler(bot *telego.Bot, update telego.Update) {
+	params := &telego.SendMessageParams{
+		ChatID:           tu.ID(update.Message.Chat.ID),
+		ReplyToMessageID: update.Message.MessageID,
+		Text:             fmt.Sprintf("/removeplace TBD"),
+		ParseMode:        "HTML",
 	}
 
 	_, _ = bot.SendMessage(params)
