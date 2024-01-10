@@ -6,11 +6,9 @@ import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/config"
-	"github.com/vladyslavpavlenko/tripassistant_bot/internal/models"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/repository"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/repository/dbrepo"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/responses"
-	"log"
 )
 
 // Repository is the repository type
@@ -48,25 +46,6 @@ func (m *Repository) AnyMessageHandler(bot *telego.Bot, update telego.Update) {
 
 // StartCommandHandler handles the /start command
 func (m *Repository) StartCommandHandler(bot *telego.Bot, update telego.Update) {
-	var user = models.User{
-		UserID:   update.Message.From.ID,
-		UserName: update.Message.From.Username,
-	}
-
-	registered, err := m.DB.CheckIfUserIsRegisteredByID(user.UserID)
-	if err != nil {
-		log.Println(err)
-		// TODO: revise
-	}
-
-	if !registered {
-		err = m.DB.AddUser(user)
-		if err != nil {
-			log.Println(err)
-			// TODO: revise
-		}
-	}
-
 	params := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
 		Text:      responses.StartResponse,

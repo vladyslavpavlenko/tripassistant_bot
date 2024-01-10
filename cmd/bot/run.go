@@ -77,7 +77,7 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	// Register handlers
 	repo := handlers.NewRepo(&app, fsClient)
 	handlers.NewHandlers(repo)
-	registerUpdates(bh)
+	registerUpdates(bh, repo)
 
 	return bot, bh, fsClient, nil
 }

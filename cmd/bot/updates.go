@@ -7,9 +7,12 @@ import (
 )
 
 // Note: handlers will match only once and in order of registration
-func registerUpdates(bh *th.BotHandler) {
+func registerUpdates(bh *th.BotHandler, r *handlers.Repository) {
+	// Middleware
+	reg := bh.Group(predicates.ChatType("private"))
+	reg.Use(isRegistered(r))
+
 	// Global commands
-	//bh.Handle(handlers.StartCommandHandler, th.CommandEqual("start"))
 	bh.Handle(handlers.Repo.StartCommandHandler, th.CommandEqual("start"))
 
 	bh.Handle(handlers.Repo.HelpCommandHandler, th.CommandEqual("help"))
