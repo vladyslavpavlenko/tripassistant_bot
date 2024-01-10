@@ -16,15 +16,15 @@ type testDBRepo struct {
 	Client *firestore.Client
 }
 
-func NewFirestoreRepo(fsClient *firestore.Client, a *config.AppConfig) repository.DatabaseRepo {
+func NewFirestoreRepo(client *firestore.Client, app *config.AppConfig) repository.DatabaseRepo {
 	return &firestoreDBRepo{
-		App:    a,
-		Client: fsClient,
+		App:    app,
+		Client: client,
 	}
 }
 
-func NewTestingFirestoreRepo(a *config.AppConfig) repository.DatabaseRepo {
+func NewTestingFirestoreRepo(app *config.AppConfig) repository.DatabaseRepo {
 	return &testDBRepo{
-		App: a,
+		App: app,
 	}
 }

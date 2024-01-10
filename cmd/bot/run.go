@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers"
 	"google.golang.org/api/option"
 	"log"
 	"os"
@@ -74,7 +75,9 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	bh, _ := th.NewBotHandler(bot, updates)
 
 	// Register handlers
-	registerHandlers(bh, &app)
+	repo := handlers.NewRepo(&app, fsClient)
+	handlers.NewHandlers(repo)
+	registerUpdates(bh)
 
 	return bot, bh, fsClient, nil
 }

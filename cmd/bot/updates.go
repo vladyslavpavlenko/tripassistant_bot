@@ -2,21 +2,22 @@ package main
 
 import (
 	th "github.com/mymmrac/telego/telegohandler"
-	"github.com/vladyslavpavlenko/tripassistant_bot/internal/config"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers/predicates"
 )
 
 // Note: handlers will match only once and in order of registration
-func registerHandlers(bh *th.BotHandler, app *config.AppConfig) {
+func registerUpdates(bh *th.BotHandler) {
 	// Global commands
-	bh.Handle(handlers.StartCommandHandler, th.CommandEqual("start"))
-	bh.Handle(handlers.HelpCommandHandler, th.CommandEqual("help"))
+	//bh.Handle(handlers.StartCommandHandler, th.CommandEqual("start"))
+	bh.Handle(handlers.Repo.StartCommandHandler, th.CommandEqual("start"))
 
-	bh.Handle(handlers.AddPlaceCommandHandler, th.And(th.CommandEqual("addplace"), predicates.ChatType("group"), predicates.Reply()))
-	bh.Handle(handlers.RemovePlaceCommandHandler, th.And(th.CommandEqual("removeplace"), predicates.ChatType("group"), predicates.Reply()))
+	bh.Handle(handlers.Repo.HelpCommandHandler, th.CommandEqual("help"))
 
-	bh.Handle(handlers.CommandMisuseHandler,
+	bh.Handle(handlers.Repo.AddPlaceCommandHandler, th.And(th.CommandEqual("addplace"), predicates.ChatType("group"), predicates.Reply()))
+	bh.Handle(handlers.Repo.RemovePlaceCommandHandler, th.And(th.CommandEqual("removeplace"), predicates.ChatType("group"), predicates.Reply()))
+
+	bh.Handle(handlers.Repo.CommandMisuseHandler,
 		th.And(
 			th.Or(
 				th.CommandEqual("randomplace"),
@@ -26,7 +27,7 @@ func registerHandlers(bh *th.BotHandler, app *config.AppConfig) {
 		),
 	)
 
-	bh.Handle(handlers.CommandWrongChatHandler,
+	bh.Handle(handlers.Repo.CommandWrongChatHandler,
 		th.Or(
 			th.CommandEqual("randomplace"),
 			th.CommandEqual("removeplace"),
@@ -34,11 +35,11 @@ func registerHandlers(bh *th.BotHandler, app *config.AppConfig) {
 	)
 
 	// Admin commands
-	bh.Handle(handlers.AdminPostCommandHandler, th.And(predicates.Admin(app), th.CommandEqual("post")))
+	bh.Handle(handlers.Repo.AdminPostCommandHandler, th.And(predicates.Admin(&app), th.CommandEqual("post")))
 
 	// Not recognized commands
-	bh.Handle(handlers.UnknownCommandHandler, th.AnyCommand())
+	bh.Handle(handlers.Repo.UnknownCommandHandler, th.AnyCommand())
 
 	// Not commands
-	bh.Handle(handlers.AnyMessageHandler, th.And(predicates.ChatType("private"), th.Any()))
+	bh.Handle(handlers.Repo.AnyMessageHandler, th.And(predicates.ChatType("private"), th.Any()))
 }

@@ -2,14 +2,15 @@ package models
 
 // User is the user model
 type User struct {
-	UserID int64
+	UserID   int64
+	UserName string
 }
 
 // Trip is the trip model
 type Trip struct {
 	TripID     int64
 	TripTitle  string
-	PlacesList []Place
+	TripPlaces []Place
 }
 
 // Place is the place model
