@@ -2,52 +2,103 @@ package dbrepo
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/models"
-	"google.golang.org/api/iterator"
-	"log"
+	"strconv"
 	"time"
 )
 
-// AddUser adds user to the users library
+const (
+	requestTimeout      = 3 * time.Second
+	requestDebugTimeout = 600 * time.Second
+)
+
+// AddUser adds a user to the users collection
 func (m *firestoreDBRepo) AddUser(user models.User) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
-	_, _, err := m.Client.Collection("users").Add(ctx, map[string]any{
+	docName := strconv.FormatInt(user.UserID, 10)
+
+	docRef := m.Client.Collection("users").Doc(docName)
+	_, err := docRef.Set(ctx, map[string]any{
 		"user_id":   user.UserID,
 		"user_name": user.UserName,
 	})
 	if err != nil {
-		log.Println(fmt.Errorf("failed adding a user to the users library: %v", err))
 		return err
 	}
 
 	return nil
 }
 
-// CheckIfUserIsRegisteredByID checks whether a user is already registered in the users library by their ID
+// DeleteUserByID deletes a user from the users collection based on its ID
+func (m *firestoreDBRepo) DeleteUserByID(id int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	defer cancel()
+
+	docName := strconv.FormatInt(id, 10)
+
+	docRef := m.Client.Collection("users").Doc(docName)
+	_, err := docRef.Delete(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CheckIfUserIsRegisteredByID checks whether a user is already registered in the users collection by their ID
 func (m *firestoreDBRepo) CheckIfUserIsRegisteredByID(id int64) (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
 	usersCollection := m.Client.Collection("users")
 
-	query := usersCollection.Where("user_id", "==", id)
-	iter := query.Documents(ctx)
+	docName := strconv.FormatInt(id, 10)
 
-	for {
-		_, err := iter.Next()
-		if errors.Is(err, iterator.Done) {
-			return false, nil
-		}
-
-		if err != nil {
-			log.Println(fmt.Errorf("failed searching for the user in users libary: %v", err))
-			return false, err
-		}
-
-		return true, nil
+	docRef := usersCollection.Doc(docName)
+	docSnapshot, err := docRef.Get(ctx)
+	if err != nil {
+		return false, err
 	}
+
+	return docSnapshot.Exists(), nil
+}
+
+// AddTrip adds a trip to the trips collection
+// Note: trip is a group chat
+func (m *firestoreDBRepo) AddTrip(trip models.Trip) error {
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	defer cancel()
+
+	docName := strconv.FormatInt(trip.TripID, 10)
+
+	docRef := m.Client.Collection("trips").Doc(docName)
+	_, err := docRef.Set(ctx, map[string]any{
+		"trip_id":     trip.TripID,
+		"trip_title":  trip.TripTitle,
+		"trip_places": trip.TripPlaces,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteTripByID deletes a trip from the trips collection based on its ID
+// Note: trip is a group chat
+func (m *firestoreDBRepo) DeleteTripByID(id int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	defer cancel()
+
+	docName := strconv.FormatInt(id, 10)
+
+	docRef := m.Client.Collection("trips").Doc(docName)
+	_, err := docRef.Delete(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

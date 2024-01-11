@@ -30,6 +30,14 @@ func NewRepo(a *config.AppConfig, client *firestore.Client) *Repository {
 	}
 }
 
+// NewTestRepo creates a new repository
+func NewTestRepo(a *config.AppConfig) *Repository {
+	return &Repository{
+		App: a,
+		DB:  dbrepo.NewTestingFirestoreRepo(a),
+	}
+}
+
 // NewHandlers sets the repository for the handlers
 func NewHandlers(r *Repository) {
 	Repo = r
@@ -63,7 +71,7 @@ func (m *Repository) StartCommandHandler(bot *telego.Bot, update telego.Update) 
 		ParseMode: "HTML",
 	}
 
-	if update.Message.Chat.Type == "group" {
+	if update.Message.Chat.Type == "group" || update.Message.Chat.Type == "supergroup" {
 		params.ReplyToMessageID = update.Message.MessageID
 	}
 
@@ -73,12 +81,13 @@ func (m *Repository) StartCommandHandler(bot *telego.Bot, update telego.Update) 
 // HelpCommandHandler handles the /help command
 func (m *Repository) HelpCommandHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
-		ChatID:    tu.ID(update.Message.Chat.ID),
-		Text:      responses.HelpResponse,
-		ParseMode: "HTML",
+		ChatID:                tu.ID(update.Message.Chat.ID),
+		Text:                  responses.HelpResponse,
+		ParseMode:             "HTML",
+		DisableWebPagePreview: true,
 	}
 
-	if update.Message.Chat.Type == "group" {
+	if update.Message.Chat.Type == "group" || update.Message.Chat.Type == "supergroup" {
 		params.ReplyToMessageID = update.Message.MessageID
 	}
 
@@ -117,7 +126,7 @@ func (m *Repository) CommandMisuseHandler(bot *telego.Bot, update telego.Update)
 		ParseMode: "HTML",
 	}
 
-	if update.Message.Chat.Type == "group" {
+	if update.Message.Chat.Type == "group" || update.Message.Chat.Type == "supergroup" {
 		params.ReplyToMessageID = update.Message.MessageID
 	}
 
@@ -146,8 +155,8 @@ func (m *Repository) ShowListCommandHandler(bot *telego.Bot, update telego.Updat
 	_, _ = bot.SendMessage(params)
 }
 
-// DeleteListCommandHandler handles the /deletelist command
-func (m *Repository) DeleteListCommandHandler(bot *telego.Bot, update telego.Update) {
+// ClearListCommandHandler handles the /clearlist command
+func (m *Repository) ClearListCommandHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
 		Text:      "/deletelist TBD",
@@ -185,13 +194,15 @@ func (m *Repository) AdminPostCommandHandler(bot *telego.Bot, update telego.Upda
 
 // UnknownCommandHandler handles unknown commands
 func (m *Repository) UnknownCommandHandler(bot *telego.Bot, update telego.Update) {
+	fmt.Println("UNKNOWN COMMAND HANDLER")
+
 	params := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
 		Text:      responses.UnknownCommand,
 		ParseMode: "HTML",
 	}
 
-	if update.Message.Chat.Type == "group" {
+	if update.Message.Chat.Type == "group" || update.Message.Chat.Type == "supergroup" {
 		params.ReplyToMessageID = update.Message.MessageID
 	}
 
@@ -200,6 +211,7 @@ func (m *Repository) UnknownCommandHandler(bot *telego.Bot, update telego.Update
 
 // AnyMessageHandler handles all the message that are not commands
 func (m *Repository) AnyMessageHandler(bot *telego.Bot, update telego.Update) {
+	fmt.Println("ANY MESSAGE HANDLER")
 	params := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
 		Text:      responses.UseCommands,
@@ -207,4 +219,61 @@ func (m *Repository) AnyMessageHandler(bot *telego.Bot, update telego.Update) {
 	}
 
 	_, _ = bot.SendMessage(params)
+}
+
+// DatabaseDeleteUserHandler handles an update when the user needs to be deleted from the database
+func (m *Repository) DatabaseDeleteUserHandler(bot *telego.Bot, update telego.Update) {
+	fmt.Println("DELETING USER FROM THE DATABASE")
+
+	err := m.DB.DeleteUserByID(update.MyChatMember.From.ID)
+	if err != nil {
+		log.Println(err)
+		// TODO: Revise
+	}
+}
+
+// DatabaseAddTripHandler handles an update when a trip needs to be added to the database
+func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Update) {
+	fmt.Println("ADDING TRIP TO THE DATABASE")
+
+	trip := models.Trip{
+		TripID:     update.Message.Chat.ID,
+		TripTitle:  update.Message.Chat.Title,
+		TripPlaces: []models.Place{},
+	}
+
+	err := m.DB.AddTrip(trip)
+	if err != nil {
+		log.Println(err)
+		// TODO: Revise
+	}
+
+	params := &telego.SendMessageParams{
+		ChatID:    tu.ID(update.Message.Chat.ID),
+		Text:      fmt.Sprintf("Adventure awaits! New trip: <b>%s</b> 🗺", trip.TripTitle),
+		ParseMode: "HTML",
+	}
+
+	_, _ = bot.SendMessage(params)
+}
+
+// DatabaseDeleteTripHandler handles an update when a trip needs to be deleted from the database
+func (m *Repository) DatabaseDeleteTripHandler(bot *telego.Bot, update telego.Update) {
+	fmt.Println("DELETING TRIP FROM THE DATABASE")
+
+	if update.Message != nil {
+		err := m.DB.DeleteTripByID(update.Message.Chat.ID)
+		if err != nil {
+			log.Println(err)
+			// TODO: Revise
+		}
+	}
+
+	if update.MyChatMember != nil {
+		err := m.DB.DeleteTripByID(update.MyChatMember.Chat.ID)
+		if err != nil {
+			log.Println(err)
+			// TODO: Revise
+		}
+	}
 }
