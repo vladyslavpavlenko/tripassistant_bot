@@ -9,15 +9,15 @@ import (
 	"log"
 )
 
-// isRegistered checks if the user is in the user library
-func isRegistered(m *handlers.Repository) th.Middleware {
+// IsRegistered checks if the user is in the user library
+func IsRegistered(m *handlers.Repository) th.Middleware {
 	return func(bot *telego.Bot, update telego.Update, next th.Handler) {
 		fmt.Println(fmt.Sprintf("%sUsing isRegistered middleware%s ", "\u001B[31m", "\u001B[0m"))
 
 		registered, err := m.DB.CheckIfUserIsRegisteredByID(update.Message.From.ID)
 		if err != nil {
 			log.Println(err)
-			// TODO: Handle the error appropriately
+			// TODO: Revise
 			return
 		}
 
@@ -30,7 +30,7 @@ func isRegistered(m *handlers.Repository) th.Middleware {
 			err := m.DB.AddUser(user)
 			if err != nil {
 				log.Println(err)
-				// TODO: Handle the error appropriately
+				// TODO: Revise
 				return
 			}
 		}

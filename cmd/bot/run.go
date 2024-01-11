@@ -61,7 +61,7 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	}
 
 	// Create Firestore client
-	fsClient, err := fbApp.Firestore(context.Background())
+	client, err := fbApp.Firestore(context.Background())
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error initializing Firestore client: %v", err)
 	}
@@ -75,9 +75,9 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	bh, _ := th.NewBotHandler(bot, updates)
 
 	// Register handlers
-	repo := handlers.NewRepo(&app, fsClient)
+	repo := handlers.NewRepo(&app, client)
 	handlers.NewHandlers(repo)
 	registerUpdates(bh, repo)
 
-	return bot, bh, fsClient, nil
+	return bot, bh, client, nil
 }
