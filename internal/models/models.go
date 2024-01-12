@@ -8,16 +8,15 @@ type User struct {
 
 // Trip is the trip model
 type Trip struct {
-	TripID     int64
-	TripTitle  string
+	TripID int64
+	// TripTitle  string
 	TripPlaces []Place
 }
 
 // Place is the place model
 type Place struct {
-	PlaceTitle       string
-	PlaceDescription string
-	PlaceLatitude    float64
-	PlaceLongitude   float64
-	PlaceAddress     string
+	PlaceTitle     string
+	PlaceLatitude  float64
+	PlaceLongitude float64
+	PlaceAddress   string
 }

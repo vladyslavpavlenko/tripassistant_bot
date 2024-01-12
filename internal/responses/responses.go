@@ -7,4 +7,9 @@ const (
 	UseCommands    = "Use commands to interact with me"
 	UseAsReply     = "Respond to a message with this command. For more details, use /help"
 	UseInGroups    = "Use this command in a group chat. For more details, use /help"
+	EmptyList      = "There are no places in this trip yet. For more details, use /help"
+	MessageTooLong = "This message is too long"
+	ServerError    = "<b>Oops! Something went wrong... ⚙️</b>\n\nTry re-adding the bot to the group or restarting the dialogue. If the issue persists, contact the developer"
+	OkSticker      = "CAACAgIAAxkBAAJtM2WhkXY7isE6_ku8vLa3y3Ke-OSjAAL-AANWnb0K2gRhMC751_80BA"
+	ErrorSticker   = "CAACAgIAAxkBAAJtNWWhmiB5sSEBWxm9us9SNCHHHTqLAAICAQACVp29Ck7ibIHLQOT_NAQ"
 )

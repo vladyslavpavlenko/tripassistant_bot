@@ -33,6 +33,28 @@ func (m *testDBRepo) DeleteTripByID(id int64) error {
 }
 
 // UpdateTripTitle updates the title of the trip
-func (m *testDBRepo) UpdateTripTitle(trip models.Trip) error {
+//func (m *testDBRepo) UpdateTripTitle(trip models.Trip) error {
+//	return nil
+//}
+
+// AddPlaceToListByTripID adds the place to the list of the trip identified by its ID
+// Note: trip is a group chat
+func (m *testDBRepo) AddPlaceToListByTripID(place models.Place, id int64) error {
 	return nil
+}
+
+// GetTripPlacesListByID returns all the places from the trip by its ID
+// Note: trip is a group chat
+func (m *testDBRepo) GetTripPlacesListByID(id int64) ([]models.Place, error) {
+	var tripPlaces []models.Place
+
+	return tripPlaces, nil
+}
+
+// GetTripByID returns the trip by its ID
+// Note: trip is a group chat
+func (m *testDBRepo) GetTripByID(id int64) (models.Trip, error) {
+	var trip models.Trip
+
+	return trip, nil
 }
