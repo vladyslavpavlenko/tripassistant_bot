@@ -8,4 +8,5 @@ type DatabaseRepo interface {
 	CheckIfUserIsRegisteredByID(id int64) (bool, error)
 	AddTrip(trip models.Trip) error
 	DeleteTripByID(id int64) error
+	UpdateTripTitle(trip models.Trip) error
 }

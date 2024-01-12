@@ -31,3 +31,8 @@ func (m *testDBRepo) AddTrip(trip models.Trip) error {
 func (m *testDBRepo) DeleteTripByID(id int64) error {
 	return nil
 }
+
+// UpdateTripTitle updates the title of the trip
+func (m *testDBRepo) UpdateTripTitle(trip models.Trip) error {
+	return nil
+}

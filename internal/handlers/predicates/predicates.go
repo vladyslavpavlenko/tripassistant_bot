@@ -132,4 +132,15 @@ func BotRemovedFromGroup() th.Predicate {
 	}
 }
 
-// GroupNameChanged is true if the name of the group was changed
+// GroupTitleChanged is true if the name of the group was changed
+func GroupTitleChanged() th.Predicate {
+	return func(u telego.Update) bool {
+		if u.Message != nil {
+			if u.Message.NewChatTitle != "" {
+				return true
+			}
+		}
+
+		return false
+	}
+}

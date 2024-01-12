@@ -1,6 +1,7 @@
 package dbrepo
 
 import (
+	"cloud.google.com/go/firestore"
 	"context"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/models"
 	"strconv"
@@ -96,6 +97,23 @@ func (m *firestoreDBRepo) DeleteTripByID(id int64) error {
 
 	docRef := m.Client.Collection("trips").Doc(docName)
 	_, err := docRef.Delete(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateTripTitle updates the title of the trip
+func (m *firestoreDBRepo) UpdateTripTitle(trip models.Trip) error {
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	defer cancel()
+
+	docName := strconv.FormatInt(trip.TripID, 10)
+
+	_, err := m.Client.Collection("trips").Doc(docName).Update(ctx, []firestore.Update{
+		{Path: "trip_title", Value: trip.TripTitle},
+	})
 	if err != nil {
 		return err
 	}
