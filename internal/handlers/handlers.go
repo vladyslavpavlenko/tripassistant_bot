@@ -12,7 +12,9 @@ import (
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/repository/dbrepo"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/responses"
 	"log"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 // Repository is the repository type
@@ -110,6 +112,8 @@ func (m *Repository) AddPlaceCommandHandler(bot *telego.Bot, update telego.Updat
 		}
 
 		_, _ = bot.SendMessage(params)
+
+		return
 	}
 
 	// TODO: parse message
@@ -125,7 +129,7 @@ func (m *Repository) AddPlaceCommandHandler(bot *telego.Bot, update telego.Updat
 
 	params := &telego.SendStickerParams{
 		ChatID:           tu.ID(update.Message.Chat.ID),
-		ReplyToMessageID: update.Message.MessageID,
+		ReplyToMessageID: update.Message.ReplyToMessage.MessageID,
 		Sticker: telego.InputFile{
 			FileID: responses.OkSticker,
 		},
@@ -174,17 +178,17 @@ func (m *Repository) CommandWrongChatHandler(bot *telego.Bot, update telego.Upda
 
 // ShowListCommandHandler handles the /showlist command
 func (m *Repository) ShowListCommandHandler(bot *telego.Bot, update telego.Update) {
-	trip, err := m.DB.GetTripByID(update.Message.Chat.ID)
+	tripPlaces, err := m.DB.GetTripPlacesListByID(update.Message.Chat.ID)
 	if err != nil {
 		log.Println(err)
 	}
 
 	var list string
 
-	if len(trip.TripPlaces) > 0 {
+	if len(tripPlaces) > 0 {
 		sb := strings.Builder{}
 
-		for i, place := range trip.TripPlaces {
+		for i, place := range tripPlaces {
 			// Default
 			if place.PlaceLatitude == 0 && place.PlaceLongitude == 0 && place.PlaceAddress == "" {
 				sb.WriteString(fmt.Sprintf("%d. %s\n", i+1, place.PlaceTitle))
@@ -209,24 +213,62 @@ func (m *Repository) ShowListCommandHandler(bot *telego.Bot, update telego.Updat
 
 // ClearListCommandHandler handles the /clearlist command
 func (m *Repository) ClearListCommandHandler(bot *telego.Bot, update telego.Update) {
-	params := &telego.SendMessageParams{
-		ChatID:    tu.ID(update.Message.Chat.ID),
-		Text:      "/deletelist TBD",
-		ParseMode: "HTML",
+	err := m.DB.DeleteTripPlacesListByID(update.Message.Chat.ID)
+	if err != nil {
+		fmt.Println(err)
+		helpers.ServerError(bot, update)
+		return
 	}
 
-	_, _ = bot.SendMessage(params)
+	params := &telego.SendStickerParams{
+		ChatID:           tu.ID(update.Message.Chat.ID),
+		ReplyToMessageID: update.Message.MessageID,
+		Sticker: telego.InputFile{
+			FileID: responses.ClearListSticker,
+		},
+	}
+
+	_, _ = bot.SendSticker(params)
 }
 
 // RandomPlaceCommandHandler handles the /randomplace command
 func (m *Repository) RandomPlaceCommandHandler(bot *telego.Bot, update telego.Update) {
-	params := &telego.SendMessageParams{
-		ChatID:    tu.ID(update.Message.Chat.ID),
-		Text:      "/randomplace TBD",
-		ParseMode: "HTML",
+	tripPlaces, err := m.DB.GetTripPlacesListByID(update.Message.Chat.ID)
+	if err != nil {
+		fmt.Println(err)
+		helpers.ServerError(bot, update)
+		return
 	}
 
-	_, _ = bot.SendMessage(params)
+	if len(tripPlaces) == 0 {
+		params := &telego.SendMessageParams{
+			ChatID:           tu.ID(update.Message.Chat.ID),
+			ReplyToMessageID: update.Message.ReplyToMessage.MessageID,
+			Text:             responses.EmptyList,
+			ParseMode:        "HTML",
+		}
+
+		_, _ = bot.SendMessage(params)
+
+		return
+	}
+
+	rand.New(rand.NewSource(time.Now().Unix()))
+
+	randomPlace := tripPlaces[rand.Intn(len(tripPlaces))]
+
+	// Default place
+	if randomPlace.PlaceLatitude == 0 && randomPlace.PlaceLongitude == 0 && randomPlace.PlaceAddress == "" {
+		params := &telego.SendMessageParams{
+			ChatID:    tu.ID(update.Message.Chat.ID),
+			Text:      randomPlace.PlaceTitle,
+			ParseMode: "HTML",
+		}
+
+		_, _ = bot.SendMessage(params)
+		return
+	}
+	// TODO: Venue message, Location message, etc.
 }
 
 // AdminPostCommandHandler handles the /post admin command
@@ -282,8 +324,7 @@ func (m *Repository) DatabaseDeleteUserHandler(bot *telego.Bot, update telego.Up
 // DatabaseAddTripHandler handles an update when a trip needs to be added to the database
 func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Update) {
 	trip := models.Trip{
-		TripID: update.Message.Chat.ID,
-		// TripTitle:  update.Message.Chat.Title,
+		TripID:     update.Message.Chat.ID,
 		TripPlaces: []models.Place{},
 	}
 
@@ -321,26 +362,3 @@ func (m *Repository) DatabaseDeleteTripHandler(bot *telego.Bot, update telego.Up
 		}
 	}
 }
-
-// DatabaseUpdateTripTitleHandler handles an update when the title of the trip needs to be updated
-//func (m *Repository) DatabaseUpdateTripTitleHandler(bot *telego.Bot, update telego.Update) {
-//	fmt.Println("TRIP TITLE UPDATED")
-//
-//	trip := models.Trip{
-//		TripID:     update.Message.Chat.ID,
-//		TripTitle:  update.Message.NewChatTitle,
-//		TripPlaces: []models.Place{},
-//	}
-//
-//	err := m.DB.UpdateTripTitle(trip)
-//	if err != nil {
-//		log.Println(err)
-//
-//		if status.Code(err) == codes.NotFound {
-//			err = m.DB.AddTrip(trip)
-//			if err != nil {
-//				log.Println(err)
-//			}
-//		}
-//	}
-//}

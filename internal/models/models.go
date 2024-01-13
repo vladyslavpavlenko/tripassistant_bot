@@ -2,21 +2,20 @@ package models
 
 // User is the user model
 type User struct {
-	UserID   int64
-	UserName string
+	UserID   int64  `firestore:"user_id"`
+	UserName string `firestore:"user_name"`
 }
 
 // Trip is the trip model
 type Trip struct {
-	TripID int64
-	// TripTitle  string
-	TripPlaces []Place
+	TripID     int64   `firestore:"trip_id"`
+	TripPlaces []Place `firestore:"trip_places"`
 }
 
 // Place is the place model
 type Place struct {
-	PlaceTitle     string
-	PlaceLatitude  float64
-	PlaceLongitude float64
-	PlaceAddress   string
+	PlaceTitle     string  `firestore:"place_title"`
+	PlaceLatitude  float64 `firestore:"place_latitude"`
+	PlaceLongitude float64 `firestore:"place_longitude"`
+	PlaceAddress   string  `firestore:"place_address"`
 }

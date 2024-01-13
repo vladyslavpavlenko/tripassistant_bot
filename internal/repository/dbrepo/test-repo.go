@@ -58,3 +58,9 @@ func (m *testDBRepo) GetTripByID(id int64) (models.Trip, error) {
 
 	return trip, nil
 }
+
+// DeleteTripPlacesListByID deletes trip places list by its ID
+// Note: trip is a group chat
+func (m *testDBRepo) DeleteTripPlacesListByID(id int64) error {
+	return nil
+}

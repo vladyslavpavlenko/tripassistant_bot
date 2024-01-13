@@ -76,8 +76,7 @@ func (m *firestoreDBRepo) AddTrip(trip models.Trip) error {
 
 	docRef := m.Client.Collection("trips").Doc(docName)
 	_, err := docRef.Set(ctx, map[string]any{
-		"trip_id": trip.TripID,
-		// "trip_title":  trip.TripTitle,
+		"trip_id":     trip.TripID,
 		"trip_places": trip.TripPlaces,
 	})
 	if err != nil {
@@ -103,24 +102,6 @@ func (m *firestoreDBRepo) DeleteTripByID(id int64) error {
 
 	return nil
 }
-
-// UpdateTripTitle updates the title of the trip
-// Note: trip is a group chat
-//func (m *firestoreDBRepo) UpdateTripTitle(trip models.Trip) error {
-//	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-//	defer cancel()
-//
-//	docName := strconv.FormatInt(trip.TripID, 10)
-//
-//	_, err := m.Client.Collection("trips").Doc(docName).Update(ctx, []firestore.Update{
-//		{Path: "trip_title", Value: trip.TripTitle},
-//	})
-//	if err != nil {
-//		return err
-//	}
-//
-//	return nil
-//}
 
 // AddPlaceToListByTripID adds the place to the list of the trip identified by its ID
 // Note: trip is a group chat
@@ -150,7 +131,7 @@ func (m *firestoreDBRepo) AddPlaceToListByTripID(place models.Place, id int64) e
 // GetTripPlacesListByID returns all the places from the trip by its ID
 // Note: trip is a group chat
 func (m *firestoreDBRepo) GetTripPlacesListByID(id int64) ([]models.Place, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*requestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
 	var tripPlaces []models.Place
@@ -173,10 +154,10 @@ func (m *firestoreDBRepo) GetTripPlacesListByID(id int64) ([]models.Place, error
 		}
 
 		place := models.Place{
-			PlaceTitle:     placeMap["PlaceTitle"].(string),
-			PlaceLatitude:  placeMap["PlaceLatitude"].(float64),
-			PlaceLongitude: placeMap["PlaceLongitude"].(float64),
-			PlaceAddress:   placeMap["PlaceAddress"].(string),
+			PlaceTitle:     placeMap["place_title"].(string),
+			PlaceLatitude:  placeMap["place_latitude"].(float64),
+			PlaceLongitude: placeMap["place_longitude"].(float64),
+			PlaceAddress:   placeMap["place_address"].(string),
 		}
 
 		tripPlaces = append(tripPlaces, place)
@@ -188,7 +169,7 @@ func (m *firestoreDBRepo) GetTripPlacesListByID(id int64) ([]models.Place, error
 // GetTripByID returns the trip by its ID
 // Note: trip is a group chat
 func (m *firestoreDBRepo) GetTripByID(id int64) (models.Trip, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*requestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
 	var trip models.Trip
@@ -203,7 +184,6 @@ func (m *firestoreDBRepo) GetTripByID(id int64) (models.Trip, error) {
 
 	data := doc.Data()
 
-	// tripTitle := data["trip_title"].(string)
 	placesData := data["trip_places"].([]any)
 
 	for _, placeData := range placesData {
@@ -213,18 +193,38 @@ func (m *firestoreDBRepo) GetTripByID(id int64) (models.Trip, error) {
 		}
 
 		place := models.Place{
-			PlaceTitle:     placeMap["PlaceTitle"].(string),
-			PlaceLatitude:  placeMap["PlaceLatitude"].(float64),
-			PlaceLongitude: placeMap["PlaceLongitude"].(float64),
-			PlaceAddress:   placeMap["PlaceAddress"].(string),
+			PlaceTitle:     placeMap["place_title"].(string),
+			PlaceLatitude:  placeMap["place_latitude"].(float64),
+			PlaceLongitude: placeMap["place_longitude"].(float64),
+			PlaceAddress:   placeMap["place_address"].(string),
 		}
 
 		tripPlaces = append(tripPlaces, place)
 	}
 
 	trip.TripID = id
-	// trip.TripTitle = tripTitle
 	trip.TripPlaces = tripPlaces
 
 	return trip, nil
+}
+
+// DeleteTripPlacesListByID deletes trip places list by its ID
+// Note: trip is a group chat
+func (m *firestoreDBRepo) DeleteTripPlacesListByID(id int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	defer cancel()
+
+	docName := strconv.FormatInt(id, 10)
+
+	_, err := m.Client.Collection("trips").Doc(docName).Update(ctx, []firestore.Update{
+		{
+			Path:  "trip_places",
+			Value: []models.Place{},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
