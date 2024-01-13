@@ -8,8 +8,10 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/googleapi/googleapirepo"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers"
 	"google.golang.org/api/option"
+	"googlemaps.github.io/maps"
 	"log"
 	"os"
 	"strconv"
@@ -24,9 +26,10 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	}
 
 	// Get environment variables
-	botToken := os.Getenv("TOKEN")
+	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	adminIDsStr := os.Getenv("ADMIN_IDS")
-	firebaseConfigPath := os.Getenv("FIREBASE_CONFIG_PATH")
+	fbConfigPath := os.Getenv("FIREBASE_CONFIG_PATH")
+	gmAPIKey := os.Getenv("GOOGLE_MAPS_API_KEY")
 
 	adminIDsSlice := strings.Split(adminIDsStr, ",")
 
@@ -53,7 +56,7 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	// Connect to Firebase
 	fmt.Println("Connecting to Firebase...")
 
-	opt := option.WithCredentialsFile(firebaseConfigPath)
+	opt := option.WithCredentialsFile(fbConfigPath)
 
 	fbApp, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
@@ -61,12 +64,20 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	}
 
 	// Create Firestore client
-	client, err := fbApp.Firestore(context.Background())
+	fsClient, err := fbApp.Firestore(context.Background())
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error initializing Firestore client: %v", err)
 	}
 
 	fmt.Println("Connected!")
+
+	// Connect to Google Maps Platform API
+	gmClient, err := maps.NewClient(maps.WithAPIKey(gmAPIKey))
+	if err != nil {
+		log.Println("Error connecting to Google Maps Platform API:", err)
+	}
+
+	googleapirepo.NewGoogleAPIRepo(gmClient, &app)
 
 	// Get updates channel
 	updates, _ := bot.UpdatesViaLongPolling(nil)
@@ -75,9 +86,9 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	bh, _ := th.NewBotHandler(bot, updates)
 
 	// Register handlers
-	repo := handlers.NewRepo(&app, client)
+	repo := handlers.NewRepo(&app, fsClient, gmClient)
 	handlers.NewHandlers(repo)
 	registerUpdates(bh)
 
-	return bot, bh, client, nil
+	return bot, bh, fsClient, nil
 }

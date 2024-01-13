@@ -1,18 +1,19 @@
 package googleapirepo
 
 import (
-	"github.com/vladyslavpavlenko/tripassistant_bot/internal/api"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/config"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/googleapi"
+	"googlemaps.github.io/maps"
 )
 
 type googleAPIRepo struct {
 	App    *config.AppConfig
-	APIKey string
+	Client *maps.Client
 }
 
-func NewGoogleAPIRepo(APIKey string, app *config.AppConfig) api.GoogleAPIRepo {
+func NewGoogleAPIRepo(client *maps.Client, app *config.AppConfig) googleapi.APIRepo {
 	return &googleAPIRepo{
 		App:    app,
-		APIKey: APIKey,
+		Client: client,
 	}
 }

@@ -6,43 +6,49 @@ import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/config"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/googleapi"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/googleapi/googleapirepo"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers/helpers"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/models"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/repository"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/repository/dbrepo"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/responses"
+	"googlemaps.github.io/maps"
 	"log"
 	"math/rand"
 	"strings"
 	"time"
 )
 
-// Repository is the repository type
+// Repository is the Repository type
 type Repository struct {
 	App *config.AppConfig
 	DB  repository.DatabaseRepo
+	API googleapi.APIRepo
 }
 
-// Repo the repository used by the handlers
+// Repo the Repository used by the handlers
 var Repo *Repository
 
-// NewRepo creates a new repository
-func NewRepo(a *config.AppConfig, client *firestore.Client) *Repository {
+// NewRepo creates a new Repository
+func NewRepo(a *config.AppConfig, fsClient *firestore.Client, gmClient *maps.Client) *Repository {
 	return &Repository{
 		App: a,
-		DB:  dbrepo.NewFirestoreRepo(client, a),
+		DB:  dbrepo.NewFirestoreRepo(fsClient, a),
+		API: googleapirepo.NewGoogleAPIRepo(gmClient, a),
 	}
 }
 
-// NewTestRepo creates a new repository
+// NewTestRepo creates a new Repository
 func NewTestRepo(a *config.AppConfig) *Repository {
 	return &Repository{
 		App: a,
 		DB:  dbrepo.NewTestingFirestoreRepo(a),
+		// API: googleapirepo.NewTestingGoogleAPIRepo(a),
 	}
 }
 
-// NewHandlers sets the repository for the handlers
+// NewHandlers sets the Repository for the handlers
 func NewHandlers(r *Repository) {
 	Repo = r
 }
@@ -273,16 +279,19 @@ func (m *Repository) RandomPlaceCommandHandler(bot *telego.Bot, update telego.Up
 
 // AdminPostCommandHandler handles the /post admin command
 func (m *Repository) AdminPostCommandHandler(bot *telego.Bot, update telego.Update) {
-	//_, _ = bot.SendMessage(tu.Message(
-	//	tu.ID(update.Message.Chat.ID),
-	//	fmt.Sprintf("Admin command")))
-	//_, _ = bot.SendLocation(tu.Location(update.Message.Chat.ChatID(), 49.80128398674975, 24.01616258114543))
+	place, err := m.API.GetPlace(update.Message.ReplyToMessage.Text)
+	if err != nil {
+		fmt.Println(err)
+		helpers.ServerError(bot, update)
+		return
+	}
+
 	_, _ = bot.SendVenue(tu.Venue(
 		tu.ID(update.Message.Chat.ID),
-		50.444211288061624,
-		30.544653525946593,
-		"Реберня на Аресенальній",
-		"вулиця Івана Мазепи, 1, Київ, 02000",
+		place.PlaceLatitude,
+		place.PlaceLongitude,
+		update.Message.ReplyToMessage.Text,
+		place.PlaceAddress,
 	))
 }
 
@@ -312,7 +321,7 @@ func (m *Repository) AnyMessageHandler(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(params)
 }
 
-// DatabaseDeleteUserHandler handles an update when the user needs to be deleted from the database
+// DatabaseDeleteUserHandler handles an update when the user needs to be deleted from the Repository
 func (m *Repository) DatabaseDeleteUserHandler(bot *telego.Bot, update telego.Update) {
 	err := m.DB.DeleteUserByID(update.MyChatMember.From.ID)
 	if err != nil {
@@ -321,7 +330,7 @@ func (m *Repository) DatabaseDeleteUserHandler(bot *telego.Bot, update telego.Up
 	}
 }
 
-// DatabaseAddTripHandler handles an update when a trip needs to be added to the database
+// DatabaseAddTripHandler handles an update when a trip needs to be added to the Repository
 func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Update) {
 	trip := models.Trip{
 		TripID:     update.Message.Chat.ID,
@@ -344,7 +353,7 @@ func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Updat
 	_, _ = bot.SendMessage(params)
 }
 
-// DatabaseDeleteTripHandler handles an update when the trip needs to be deleted from the database
+// DatabaseDeleteTripHandler handles an update when the trip needs to be deleted from the Repository
 func (m *Repository) DatabaseDeleteTripHandler(bot *telego.Bot, update telego.Update) {
 	if update.Message != nil {
 		err := m.DB.DeleteTripByID(update.Message.Chat.ID)

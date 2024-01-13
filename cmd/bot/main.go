@@ -9,13 +9,13 @@ var app config.AppConfig
 
 func main() {
 	// Run application
-	bot, bh, client, err := run()
+	bot, bh, firestoreClient, err := run()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Close Firebase connection
-	defer client.Close()
+	defer firestoreClient.Close()
 
 	// Stop handling updates
 	defer bh.Stop()
