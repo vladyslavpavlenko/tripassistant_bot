@@ -1,4 +1,4 @@
-package repository
+package database
 
 import "github.com/vladyslavpavlenko/tripassistant_bot/internal/models"
 

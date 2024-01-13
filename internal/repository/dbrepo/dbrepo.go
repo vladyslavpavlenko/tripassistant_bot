@@ -3,7 +3,7 @@ package dbrepo
 import (
 	"cloud.google.com/go/firestore"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/config"
-	"github.com/vladyslavpavlenko/tripassistant_bot/internal/repository"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/database"
 )
 
 type firestoreDBRepo struct {
@@ -16,14 +16,14 @@ type testDBRepo struct {
 	Client *firestore.Client
 }
 
-func NewFirestoreRepo(client *firestore.Client, app *config.AppConfig) repository.DatabaseRepo {
+func NewFirestoreRepo(client *firestore.Client, app *config.AppConfig) database.DatabaseRepo {
 	return &firestoreDBRepo{
 		App:    app,
 		Client: client,
 	}
 }
 
-func NewTestingFirestoreRepo(app *config.AppConfig) repository.DatabaseRepo {
+func NewTestingFirestoreRepo(app *config.AppConfig) database.DatabaseRepo {
 	return &testDBRepo{
 		App: app,
 	}
