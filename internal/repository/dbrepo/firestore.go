@@ -154,6 +154,7 @@ func (m *firestoreDBRepo) GetTripPlacesListByID(id int64) ([]models.Place, error
 		}
 
 		place := models.Place{
+			PlaceID:        placeMap["place_id"].(string),
 			PlaceTitle:     placeMap["place_title"].(string),
 			PlaceLatitude:  placeMap["place_latitude"].(float64),
 			PlaceLongitude: placeMap["place_longitude"].(float64),
@@ -193,6 +194,7 @@ func (m *firestoreDBRepo) GetTripByID(id int64) (models.Trip, error) {
 		}
 
 		place := models.Place{
+			PlaceID:        placeMap["place_id"].(string),
 			PlaceTitle:     placeMap["place_title"].(string),
 			PlaceLatitude:  placeMap["place_latitude"].(float64),
 			PlaceLongitude: placeMap["place_longitude"].(float64),

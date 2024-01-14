@@ -6,9 +6,9 @@ import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/config"
-	"github.com/vladyslavpavlenko/tripassistant_bot/internal/googleapi"
-	"github.com/vladyslavpavlenko/tripassistant_bot/internal/googleapi/googleapirepo"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers/helpers"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/mapsapi"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/mapsapi/googleapirepo"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/models"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/repository"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/repository/dbrepo"
@@ -24,7 +24,7 @@ import (
 type Repository struct {
 	App *config.AppConfig
 	DB  repository.DatabaseRepo
-	API googleapi.APIRepo
+	API mapsapi.APIRepo
 }
 
 // Repo the Repository used by the handlers
@@ -122,10 +122,15 @@ func (m *Repository) AddPlaceCommandHandler(bot *telego.Bot, update telego.Updat
 		return
 	}
 
-	// TODO: parse message
-	place.PlaceTitle = messageText
+	place, err := m.API.GetPlace(messageText, update.Message.Chat.Title)
+	if err != nil {
+		log.Println(fmt.Errorf("error parsing place from Places API: %s", err))
+		place = models.Place{
+			PlaceTitle: messageText,
+		}
+	}
 
-	err := m.DB.AddPlaceToListByTripID(place, update.Message.Chat.ID)
+	err = m.DB.AddPlaceToListByTripID(place, update.Message.Chat.ID)
 	if err != nil {
 		// TODO: revise
 		fmt.Println(err)
@@ -195,12 +200,13 @@ func (m *Repository) ShowListCommandHandler(bot *telego.Bot, update telego.Updat
 		sb := strings.Builder{}
 
 		for i, place := range tripPlaces {
-			// Default
-			if place.PlaceLatitude == 0 && place.PlaceLongitude == 0 && place.PlaceAddress == "" {
+			if place.PlaceID == "" {
 				sb.WriteString(fmt.Sprintf("%d. %s\n", i+1, place.PlaceTitle))
+			} else {
+				sb.WriteString(fmt.Sprintf("%d. <a href=\""+
+					"google.com/maps/search/?api=1&query=Google&query_place_id=%s\">%s ↗</a> \n",
+					i+1, place.PlaceID, place.PlaceTitle))
 			}
-
-			// TODO: Venue message, Location message, etc.
 		}
 
 		list = sb.String()
@@ -209,9 +215,10 @@ func (m *Repository) ShowListCommandHandler(bot *telego.Bot, update telego.Updat
 	}
 
 	params := &telego.SendMessageParams{
-		ChatID:    tu.ID(update.Message.Chat.ID),
-		Text:      fmt.Sprintf("<b>%s</b>\n\n%s", update.Message.Chat.Title, list),
-		ParseMode: "HTML",
+		ChatID:                tu.ID(update.Message.Chat.ID),
+		Text:                  fmt.Sprintf("<b>%s</b>\n\n%s", update.Message.Chat.Title, list),
+		ParseMode:             "HTML",
+		DisableWebPagePreview: true,
 	}
 
 	_, _ = bot.SendMessage(params)
@@ -282,7 +289,7 @@ func (m *Repository) AdminPostCommandHandler(bot *telego.Bot, update telego.Upda
 	place, err := m.API.GetPlace(update.Message.ReplyToMessage.Text)
 	if err != nil {
 		fmt.Println(err)
-		helpers.ServerError(bot, update)
+		fmt.Println("Error looking for place")
 		return
 	}
 

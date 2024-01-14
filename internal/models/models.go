@@ -14,6 +14,7 @@ type Trip struct {
 
 // Place is the place model
 type Place struct {
+	PlaceID        string  `firestore:"place_id"`
 	PlaceTitle     string  `firestore:"place_title"`
 	PlaceLatitude  float64 `firestore:"place_latitude"`
 	PlaceLongitude float64 `firestore:"place_longitude"`

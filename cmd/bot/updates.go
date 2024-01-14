@@ -49,11 +49,10 @@ func registerUpdates(bh *th.BotHandler) {
 	bh.Handle(handlers.Repo.UnknownCommandHandler, th.AnyCommand())
 
 	// Not commands
-	bh.Handle(handlers.Repo.AnyMessageHandler, th.And(th.AnyMessage(), pd.PrivateChat()))
+	bh.Handle(handlers.Repo.AnyMessageHandler, th.And(th.AnyMessage(), pd.PrivateChat(), th.Not(pd.Admin(&app))))
 
 	// Database
 	bh.Handle(handlers.Repo.DatabaseDeleteUserHandler, th.And(pd.PrivateChat(), pd.BotBlocked()))
 	groupChat.Handle(handlers.Repo.DatabaseAddTripHandler, pd.BotAddedToGroup())
 	groupChat.Handle(handlers.Repo.DatabaseDeleteTripHandler, pd.BotRemovedFromGroup())
-	//groupChat.Handle(handlers.Repo.DatabaseUpdateTripTitleHandler, pd.GroupTitleChanged())
 }

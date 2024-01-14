@@ -1,7 +1,7 @@
-package googleapi
+package mapsapi
 
 import "github.com/vladyslavpavlenko/tripassistant_bot/internal/models"
 
 type APIRepo interface {
-	GetPlace(placeQuery string) (models.Place, error)
+	GetPlace(placeTitle string, options ...string) (models.Place, error)
 }
