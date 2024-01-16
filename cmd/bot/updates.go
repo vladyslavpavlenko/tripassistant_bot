@@ -43,7 +43,7 @@ func registerUpdates(bh *th.BotHandler) {
 	)
 
 	// Admin commands
-	admin.Handle(handlers.Repo.AdminPostCommandHandler, th.CommandEqual("post"))
+	admin.Handle(handlers.Repo.AdminPostCommandHandler, th.And(th.CommandEqual("post"), pd.Reply()))
 
 	// Not recognized commands
 	bh.Handle(handlers.Repo.UnknownCommandHandler, th.AnyCommand())
@@ -55,4 +55,7 @@ func registerUpdates(bh *th.BotHandler) {
 	bh.Handle(handlers.Repo.DatabaseDeleteUserHandler, th.And(pd.PrivateChat(), pd.BotBlocked()))
 	groupChat.Handle(handlers.Repo.DatabaseAddTripHandler, pd.BotAddedToGroup())
 	groupChat.Handle(handlers.Repo.DatabaseDeleteTripHandler, pd.BotRemovedFromGroup())
+
+	// Callbacks
+	bh.Handle(handlers.Repo.SendPostMessageHandler, th.CallbackDataContains("confirmation_pressed"))
 }

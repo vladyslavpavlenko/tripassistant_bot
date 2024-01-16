@@ -2,6 +2,7 @@ package googleapirepo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/models"
 	"googlemaps.github.io/maps"
@@ -42,6 +43,8 @@ func (m *googleAPIRepo) GetPlace(placeTitle string, options ...string) (models.P
 		place.PlaceLatitude = firstPlace.Geometry.Location.Lat
 		place.PlaceLongitude = firstPlace.Geometry.Location.Lng
 		place.PlaceAddress = firstPlace.FormattedAddress
+	} else {
+		return place, errors.New("couldn't find the place")
 	}
 
 	return place, nil
