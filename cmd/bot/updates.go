@@ -27,6 +27,7 @@ func registerUpdates(bh *th.BotHandler) {
 
 	groupChat.Handle(handlers.Repo.CommandMisuseHandler,
 		th.Or(
+			th.CommandEqual("post"),
 			th.CommandEqual("addplace"),
 			th.CommandEqual("removeplace"),
 		),
@@ -34,7 +35,6 @@ func registerUpdates(bh *th.BotHandler) {
 
 	bh.Handle(handlers.Repo.CommandWrongChatHandler,
 		th.Or(
-			th.CommandEqual("addplace"),
 			th.CommandEqual("removeplace"),
 			th.CommandEqual("randomplace"),
 			th.CommandEqual("showlist"),
@@ -44,6 +44,12 @@ func registerUpdates(bh *th.BotHandler) {
 
 	// Admin commands
 	admin.Handle(handlers.Repo.AdminPostCommandHandler, th.And(th.CommandEqual("post"), pd.Reply()))
+
+	admin.Handle(handlers.Repo.AdminCommandMisuseHandler,
+		th.Or(
+			th.CommandEqual("post"),
+		),
+	)
 
 	// Not recognized commands
 	bh.Handle(handlers.Repo.UnknownCommandHandler, th.AnyCommand())

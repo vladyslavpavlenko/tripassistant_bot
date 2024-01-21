@@ -212,6 +212,17 @@ func (m *Repository) CommandMisuseHandler(bot *telego.Bot, update telego.Update)
 	_, _ = bot.SendMessage(params)
 }
 
+// AdminCommandMisuseHandler handles misuse of admin commands
+func (m *Repository) AdminCommandMisuseHandler(bot *telego.Bot, update telego.Update) {
+	params := &telego.SendMessageParams{
+		ChatID:    tu.ID(update.Message.Chat.ID),
+		Text:      responses.UseAsReplyAdmin,
+		ParseMode: "HTML",
+	}
+
+	_, _ = bot.SendMessage(params)
+}
+
 // CommandWrongChatHandler handles cases when commands are used in a private chat instead of a group
 func (m *Repository) CommandWrongChatHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
@@ -348,11 +359,26 @@ func (m *Repository) SendPostMessageHandler(bot *telego.Bot, update telego.Updat
 		helpers.ServerError(bot, update)
 	}
 
+	btnText, btnURL, text, err := helpers.ParsePost(update.CallbackQuery.Message.ReplyToMessage.Text)
+	if err != nil {
+		fmt.Println(err)
+		helpers.ServerError(bot, update)
+		return
+	}
+
+	inlineKeyboard := make([][]telego.InlineKeyboardButton, 0)
+	inlineKeyboard = append(inlineKeyboard, []telego.InlineKeyboardButton{})
+	inlineKeyboard[0] = append(inlineKeyboard[0], telego.InlineKeyboardButton{
+		Text: btnText,
+		URL:  btnURL,
+	})
+
 	for _, id := range userIDs {
 		params := &telego.SendMessageParams{
-			ChatID: tu.ID(id),
-			Text:   update.CallbackQuery.Message.ReplyToMessage.Text,
-			// ReplyMarkup: update.CallbackQuery.Message.ReplyToMessage.ReplyMarkup,
+			ChatID:      tu.ID(id),
+			Text:        text,
+			ParseMode:   "HTML",
+			ReplyMarkup: &telego.InlineKeyboardMarkup{InlineKeyboard: inlineKeyboard},
 		}
 		_, _ = bot.SendMessage(params)
 	}

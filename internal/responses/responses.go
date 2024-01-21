@@ -7,6 +7,7 @@ const (
 	NewTrip                   = "Adventure awaits! New trip: <b>%s</b>\n\nFor more details, use /help 🗺"
 	UseCommands               = "Use commands to interact with me"
 	UseAsReply                = "Respond to a message with this command. For more details, use /help"
+	UseAsReplyAdmin           = "Respond to a message with this command.\n\n<b>Format:</b>\nb: \"\"\nu: \"\"\nt: \"\"\n\nUse HTML formatting."
 	UseInGroups               = "Use this command in a group chat. For more details, use /help"
 	EmptyList                 = "There are no places in this trip yet. For more details, use /help"
 	MessageTooLong            = "This message is too long"
