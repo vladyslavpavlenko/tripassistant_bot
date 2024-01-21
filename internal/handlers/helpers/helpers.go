@@ -48,6 +48,17 @@ func ServerError(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendSticker(stickerParams)
 }
 
+// ThrottlingMessage notifies the user about the temporary throttling
+func ThrottlingMessage(bot *telego.Bot, update telego.Update) {
+	messageParams := &telego.SendMessageParams{
+		ChatID:    tu.ID(update.Message.Chat.ID),
+		Text:      responses.Throttling,
+		ParseMode: "HTML",
+	}
+
+	_, _ = bot.SendMessage(messageParams)
+}
+
 // ParsePost parses button text, button URL, and post text from a string
 func ParsePost(input string) (string, string, string, error) {
 	pattern := `b: "(.+)"\s+u: "(.+)"\s+t: "(.+)"`

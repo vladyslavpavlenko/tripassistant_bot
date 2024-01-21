@@ -1,13 +1,50 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
+	"github.com/redis/go-redis/v9"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers"
+	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers/helpers"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/models"
 	"log"
+	"time"
 )
+
+func Throttling(redisClient *redis.Client, maxRequests int64, timeWindow time.Duration) th.Middleware {
+	return func(bot *telego.Bot, update telego.Update, next th.Handler) {
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		if update.Message != nil && update.Message.From != nil {
+			userID := update.Message.From.ID
+
+			redisKey := fmt.Sprintf("throttle:%d", userID)
+
+			requestCount, err := redisClient.Incr(ctx, redisKey).Result()
+			if err != nil {
+				log.Println("Error incrementing request count:", err)
+				next(bot, update)
+				return
+			}
+
+			if requestCount == 1 {
+				redisClient.Expire(ctx, redisKey, timeWindow)
+			}
+
+			if requestCount > maxRequests {
+				log.Printf("User %d exceeded maximum request limit. Throttling...", userID)
+				helpers.ThrottlingMessage(bot, update)
+			} else {
+				next(bot, update)
+			}
+		} else {
+			next(bot, update)
+		}
+	}
+}
 
 // IsRegistered checks if the user is in the user library
 func IsRegistered(m *handlers.Repository) th.Middleware {

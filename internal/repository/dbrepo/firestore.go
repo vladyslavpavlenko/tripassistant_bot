@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	requestTimeout = 300 * time.Second
+	requestTimeout = 3 * time.Second
 )
 
 // AddUser adds a user to the users collection

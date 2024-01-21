@@ -15,6 +15,7 @@ const (
 	Confirm                   = "Would you like to confirm?"
 	Confirmed                 = "<i>Confirmed!</i>"
 	ServerError               = "<b>Oops! Something went wrong... ⚙️</b>\n\nTry re-adding the bot to the group or restarting the dialogue. If the issue persists, contact the developer"
+	Throttling                = "Not so often!"
 	OkSticker                 = "CAACAgIAAxkBAAJtM2WhkXY7isE6_ku8vLa3y3Ke-OSjAAL-AANWnb0K2gRhMC751_80BA"
 	ClearListSticker          = "CAACAgIAAxkBAAJtk2WiscWgDG-csFsHFltulEd7LiWDAALMFQACdWepSdykWqEAAVfrBDQE"
 	ErrorSticker              = "CAACAgIAAxkBAAJtl2WisvMQ-2YqcStg8NrTwfWb8enmAAInFQACN4qgScbxh817Y0veNAQ"

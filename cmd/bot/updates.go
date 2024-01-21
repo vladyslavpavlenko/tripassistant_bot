@@ -2,18 +2,20 @@ package main
 
 import (
 	th "github.com/mymmrac/telego/telegohandler"
+	"github.com/redis/go-redis/v9"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers"
 	pd "github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers/predicates"
+	"time"
 )
 
 // Note: handlers will match only once and in order of registration
-func registerUpdates(bh *th.BotHandler) {
+func registerUpdates(bh *th.BotHandler, redisClient *redis.Client) {
 	// Middleware
 	groupChat := bh.Group(th.Or(pd.GroupChat(), pd.SuperGroupChat()))
 	admin := bh.Group(pd.Admin(&app), pd.PrivateChat())
 
 	// Globally used middleware
-	// privateChat.Use(IsRegistered(r))
+	bh.Use(Throttling(redisClient, 3, 6*time.Second))
 
 	// Global commands
 	bh.Handle(handlers.Repo.StartCommandHandler, th.CommandEqual("start"))
@@ -35,6 +37,7 @@ func registerUpdates(bh *th.BotHandler) {
 
 	bh.Handle(handlers.Repo.CommandWrongChatHandler,
 		th.Or(
+			th.CommandEqual("addplace"),
 			th.CommandEqual("removeplace"),
 			th.CommandEqual("randomplace"),
 			th.CommandEqual("showlist"),

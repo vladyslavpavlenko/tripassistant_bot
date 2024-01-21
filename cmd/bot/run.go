@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
+	"github.com/redis/go-redis/v9"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/mapsapi/googleapirepo"
 	"google.golang.org/api/option"
@@ -79,6 +80,17 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 
 	googleapirepo.NewGoogleAPIRepo(gmClient, &app)
 
+	// Connect to Redis
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	pong, err := redisClient.Ping(context.Background()).Result()
+
+	fmt.Println(pong, err)
+
 	// Get updates channel
 	updates, _ := bot.UpdatesViaLongPolling(nil)
 
@@ -88,7 +100,7 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	// Register handlers
 	repo := handlers.NewRepo(&app, fsClient, gmClient)
 	handlers.NewHandlers(repo)
-	registerUpdates(bh)
+	registerUpdates(bh, redisClient)
 
 	return bot, bh, fsClient, nil
 }
