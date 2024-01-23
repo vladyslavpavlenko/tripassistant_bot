@@ -63,14 +63,12 @@ func (m *Repository) StartCommandHandler(bot *telego.Bot, update telego.Update) 
 	registered, err := m.DB.CheckIfUserIsRegisteredByID(user.UserID)
 	if err != nil {
 		log.Println(err)
-		// TODO: Revise
 	}
 
 	if !registered {
 		err := m.DB.AddUser(user)
 		if err != nil {
 			log.Println(err)
-			// TODO: Revise
 		}
 	}
 
@@ -159,9 +157,8 @@ func (m *Repository) AddPlaceCommandHandler(bot *telego.Bot, update telego.Updat
 
 	err := m.DB.AddPlaceToListByTripID(place, update.Message.Chat.ID)
 	if err != nil {
-		// TODO: revise
 		fmt.Println(err)
-		helpers.ServerError(bot, update)
+		helpers.Error(bot, update)
 		return
 	}
 
@@ -184,7 +181,7 @@ func (m *Repository) RemovePlaceCommandHandler(bot *telego.Bot, update telego.Up
 	err := m.DB.DeleteTripPlaceByTitle(placeTitle, tripID)
 	if err != nil {
 		fmt.Println(err)
-		helpers.ServerError(bot, update)
+		helpers.Error(bot, update)
 		return
 	}
 
@@ -276,7 +273,7 @@ func (m *Repository) ClearListCommandHandler(bot *telego.Bot, update telego.Upda
 	err := m.DB.DeleteTripPlacesListByID(update.Message.Chat.ID)
 	if err != nil {
 		fmt.Println(err)
-		helpers.ServerError(bot, update)
+		helpers.Error(bot, update)
 		return
 	}
 
@@ -296,7 +293,7 @@ func (m *Repository) RandomPlaceCommandHandler(bot *telego.Bot, update telego.Up
 	tripPlaces, err := m.DB.GetTripPlacesListByID(update.Message.Chat.ID)
 	if err != nil {
 		fmt.Println(err)
-		helpers.ServerError(bot, update)
+		helpers.Error(bot, update)
 		return
 	}
 
@@ -317,7 +314,6 @@ func (m *Repository) RandomPlaceCommandHandler(bot *telego.Bot, update telego.Up
 
 	randomPlace := tripPlaces[rand.Intn(len(tripPlaces))]
 
-	// Text
 	if randomPlace.PlaceLatitude == 0 && randomPlace.PlaceLongitude == 0 && randomPlace.PlaceAddress == "" {
 		params := &telego.SendMessageParams{
 			ChatID:    tu.ID(update.Message.Chat.ID),
@@ -339,8 +335,6 @@ func (m *Repository) RandomPlaceCommandHandler(bot *telego.Bot, update telego.Up
 		_, _ = bot.SendVenue(params)
 		return
 	}
-
-	// TODO: Venue message, Location message, etc.
 }
 
 // SendPostMessageHandler sends a post message
@@ -356,13 +350,23 @@ func (m *Repository) SendPostMessageHandler(bot *telego.Bot, update telego.Updat
 	userIDs, err := m.DB.GetAllUserIDs()
 	if err != nil {
 		log.Println(err)
-		helpers.ServerError(bot, update)
+		helpers.Error(bot, update)
 	}
 
-	btnText, btnURL, text, err := helpers.ParsePost(update.CallbackQuery.Message.ReplyToMessage.Text)
+	msgText := update.CallbackQuery.Message.ReplyToMessage.Text
+
+	btnText, btnURL, text, err := helpers.ParsePost(msgText)
 	if err != nil {
-		fmt.Println(err)
-		helpers.ServerError(bot, update)
+		text = msgText
+
+		for _, id := range userIDs {
+			params := &telego.SendMessageParams{
+				ChatID:    tu.ID(id),
+				Text:      text,
+				ParseMode: "HTML",
+			}
+			_, _ = bot.SendMessage(params)
+		}
 		return
 	}
 
@@ -386,10 +390,20 @@ func (m *Repository) SendPostMessageHandler(bot *telego.Bot, update telego.Updat
 
 // AdminPostCommandHandler handles the /post admin command
 func (m *Repository) AdminPostCommandHandler(bot *telego.Bot, update telego.Update) {
-	btnText, btnURL, text, err := helpers.ParsePost(update.Message.ReplyToMessage.Text)
+	msgText := update.Message.ReplyToMessage.Text
+	btnText, btnURL, text, err := helpers.ParsePost(msgText)
 	if err != nil {
-		fmt.Println(err)
-		helpers.ServerError(bot, update)
+		text = msgText
+
+		params := &telego.SendMessageParams{
+			ChatID:    tu.ID(update.Message.Chat.ID),
+			Text:      text,
+			ParseMode: "HTML",
+		}
+
+		_, _ = bot.SendMessage(params)
+
+		helpers.ConfirmationRequest(bot, update)
 		return
 	}
 
@@ -443,14 +457,11 @@ func (m *Repository) DatabaseDeleteUserHandler(bot *telego.Bot, update telego.Up
 	err := m.DB.DeleteUserByID(update.MyChatMember.From.ID)
 	if err != nil {
 		log.Println(err)
-		// TODO: Revise
 	}
 }
 
 // DatabaseAddTripHandler handles an update when a trip needs to be added to the Repository
 func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Update) {
-	fmt.Printf("CALLING ADD TRIP HANDLER \n\n")
-
 	var chatID int64
 	var chatTitle string
 
@@ -463,7 +474,7 @@ func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Updat
 			chatTitle = update.MyChatMember.Chat.Title
 		} else {
 			log.Println("error adding trip to the database")
-			helpers.ServerError(bot, update)
+			helpers.Error(bot, update)
 			return
 		}
 	}
@@ -476,7 +487,7 @@ func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Updat
 	err := m.DB.AddTrip(trip)
 	if err != nil {
 		log.Println(err)
-		helpers.ServerError(bot, update)
+		helpers.Error(bot, update)
 		return
 	}
 
@@ -491,7 +502,6 @@ func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Updat
 
 // DatabaseDeleteTripHandler handles an update when the trip needs to be deleted from the Repository
 func (m *Repository) DatabaseDeleteTripHandler(bot *telego.Bot, update telego.Update) {
-	fmt.Println("DELETE TRIP HANDLER")
 	if update.Message != nil {
 		err := m.DB.DeleteTripByID(update.Message.Chat.ID)
 		if err != nil {

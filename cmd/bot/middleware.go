@@ -25,7 +25,7 @@ func Throttling(redisClient *redis.Client, maxRequests int64, timeWindow time.Du
 
 			requestCount, err := redisClient.Incr(ctx, redisKey).Result()
 			if err != nil {
-				log.Println("Error incrementing request count:", err)
+				log.Printf("Error incrementing request count for user %d: %v", userID, err)
 				next(bot, update)
 				return
 			}
@@ -54,7 +54,6 @@ func IsRegistered(m *handlers.Repository) th.Middleware {
 		registered, err := m.DB.CheckIfUserIsRegisteredByID(update.Message.From.ID)
 		if err != nil {
 			log.Println(err)
-			// TODO: Revise
 			return
 		}
 
@@ -67,7 +66,6 @@ func IsRegistered(m *handlers.Repository) th.Middleware {
 			err := m.DB.AddUser(user)
 			if err != nil {
 				log.Println(err)
-				// TODO: Revise
 				return
 			}
 		}

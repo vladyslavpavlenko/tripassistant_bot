@@ -23,7 +23,7 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	// Load .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error getting environment variables:", err)
+		return nil, nil, nil, fmt.Errorf("error getting environment variables: %v", err)
 	}
 
 	// Get environment variables
@@ -31,6 +31,8 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 	adminIDsStr := os.Getenv("ADMIN_IDS")
 	fbConfigPath := os.Getenv("FIREBASE_CONFIG_PATH")
 	gmAPIKey := os.Getenv("GOOGLE_MAPS_API_KEY")
+	redisAddr := os.Getenv("REDIS_ADDR")
+	redisPassword := os.Getenv("REDIS_PASSWORD")
 
 	adminIDsSlice := strings.Split(adminIDsStr, ",")
 
@@ -39,7 +41,7 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 		app.AdminIDs = append(app.AdminIDs, adminID)
 	}
 
-	fmt.Println("Starting bot...")
+	log.Println("Starting bot...")
 
 	// Create bot and enable debugging info
 	bot, err := telego.NewBot(botToken, telego.WithDefaultLogger(true, true))
@@ -52,10 +54,10 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 		return nil, nil, nil, err
 	}
 
-	fmt.Println(fmt.Sprintf("Bot runs on @%s", botUser.Username))
+	log.Println(fmt.Sprintf("Bot runs on @%s", botUser.Username))
 
 	// Connect to Firebase
-	fmt.Println("Connecting to Firebase...")
+	log.Println("Connecting to Firebase...")
 
 	opt := option.WithCredentialsFile(fbConfigPath)
 
@@ -70,7 +72,7 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 		return nil, nil, nil, fmt.Errorf("error initializing Firestore client: %v", err)
 	}
 
-	fmt.Println("Connected!")
+	log.Println("Connected!")
 
 	// Connect to Google Maps Platform API
 	gmClient, err := maps.NewClient(maps.WithAPIKey(gmAPIKey))
@@ -82,14 +84,13 @@ func run() (*telego.Bot, *th.BotHandler, *firestore.Client, error) {
 
 	// Connect to Redis
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
+		Addr:     redisAddr,
+		Password: redisPassword,
 	})
 
 	pong, err := redisClient.Ping(context.Background()).Result()
 
-	fmt.Println(pong, err)
+	log.Println(pong, err)
 
 	// Get updates channel
 	updates, _ := bot.UpdatesViaLongPolling(nil)

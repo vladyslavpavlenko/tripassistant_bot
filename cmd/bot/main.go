@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cloud.google.com/go/firestore"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/config"
 	"log"
 )
@@ -15,7 +16,12 @@ func main() {
 	}
 
 	// Close Firebase connection
-	defer firestoreClient.Close()
+	defer func(firestoreClient *firestore.Client) {
+		err := firestoreClient.Close()
+		if err != nil {
+			log.Printf("Error closing Firestore client: %v", err)
+		}
+	}(firestoreClient)
 
 	// Stop handling updates
 	defer bh.Stop()

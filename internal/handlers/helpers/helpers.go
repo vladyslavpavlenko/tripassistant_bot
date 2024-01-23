@@ -28,8 +28,8 @@ func ConfirmationRequest(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(params)
 }
 
-// ServerError notifies the user about an error on the server side
-func ServerError(bot *telego.Bot, update telego.Update) {
+// Error notifies the user about an error on the server side
+func Error(bot *telego.Bot, update telego.Update) {
 	messageParams := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
 		Text:      responses.ServerError,

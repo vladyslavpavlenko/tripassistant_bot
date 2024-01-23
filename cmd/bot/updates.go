@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+const (
+	throttleMaxRequests = 3
+	throttleTimeWindow  = 6 * time.Second
+)
+
 // Note: handlers will match only once and in order of registration
 func registerUpdates(bh *th.BotHandler, redisClient *redis.Client) {
 	// Middleware
@@ -15,7 +20,7 @@ func registerUpdates(bh *th.BotHandler, redisClient *redis.Client) {
 	admin := bh.Group(pd.Admin(&app), pd.PrivateChat())
 
 	// Globally used middleware
-	bh.Use(Throttling(redisClient, 3, 6*time.Second))
+	bh.Use(Throttling(redisClient, throttleMaxRequests, throttleTimeWindow))
 
 	// Global commands
 	bh.Handle(handlers.Repo.StartCommandHandler, th.CommandEqual("start"))
