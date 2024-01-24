@@ -1,14 +1,13 @@
 package predicates
 
 import (
-	"fmt"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/config"
 	"slices"
 )
 
-// Admin is true if the message is sent by an admin
+// Admin is true if the message is sent by an admin.
 func Admin(app *config.AppConfig) th.Predicate {
 	return func(u telego.Update) bool {
 		if u.Message == nil {
@@ -18,7 +17,7 @@ func Admin(app *config.AppConfig) th.Predicate {
 	}
 }
 
-// PrivateChat is true if the message is sent in a private chat
+// PrivateChat is true if the message is sent in a private chat.
 func PrivateChat() th.Predicate {
 	return func(u telego.Update) bool {
 		if u.Message == nil {
@@ -32,7 +31,7 @@ func PrivateChat() th.Predicate {
 	}
 }
 
-// GroupChat is true if the message is sent in a group chat
+// GroupChat is true if the message is sent in a group chat.
 func GroupChat() th.Predicate {
 	return func(u telego.Update) bool {
 		if u.Message == nil {
@@ -46,7 +45,7 @@ func GroupChat() th.Predicate {
 	}
 }
 
-// SuperGroupChat is true if the message is sent in a supergroup chat
+// SuperGroupChat is true if the message is sent in a supergroup chat.
 func SuperGroupChat() th.Predicate {
 	return func(u telego.Update) bool {
 		if u.Message == nil {
@@ -60,10 +59,9 @@ func SuperGroupChat() th.Predicate {
 	}
 }
 
-// Reply is true if the message is sent in reply to another message
+// Reply is true if the message is sent in reply to another message.
 func Reply() th.Predicate {
 	return func(u telego.Update) bool {
-		fmt.Println("USING REPLY PREDICATE")
 		if u.Message != nil {
 			return u.Message.ReplyToMessage != nil
 		}
@@ -71,7 +69,7 @@ func Reply() th.Predicate {
 	}
 }
 
-// BotBlocked is true if the bot is blocked by the user
+// BotBlocked is true if the bot is blocked by the user.
 func BotBlocked() th.Predicate {
 	return func(u telego.Update) bool {
 		if u.MyChatMember != nil && u.MyChatMember.NewChatMember != nil {
@@ -81,14 +79,13 @@ func BotBlocked() th.Predicate {
 	}
 }
 
-// BotAddedToGroup is true if the bot was added to a group
-func BotAddedToGroup() th.Predicate {
+// BotAddedToGroup is true if the bot was added to a group.
+func BotAddedToGroup(app *config.AppConfig) th.Predicate {
 	return func(u telego.Update) bool {
 		if u.MyChatMember != nil {
-			if u.MyChatMember.NewChatMember.MemberUser().Username == "tripassistant_bot" &&
+			if u.MyChatMember.NewChatMember.MemberUser().Username == app.BotUsername &&
 				u.MyChatMember.NewChatMember.MemberStatus() != telego.MemberStatusLeft &&
 				u.MyChatMember.OldChatMember.MemberStatus() == telego.MemberStatusLeft {
-				fmt.Println("BOT ADDED TO SUPERGROUP")
 				return true
 			}
 		}
@@ -98,13 +95,12 @@ func BotAddedToGroup() th.Predicate {
 }
 
 // BotRemovedFromGroup is true if the bot was removed from a group. This can
-// happen if the group was deleted or the bot itself was removed
-func BotRemovedFromGroup() th.Predicate {
+// happen if the group was deleted or the bot itself was removed.
+func BotRemovedFromGroup(app *config.AppConfig) th.Predicate {
 	return func(u telego.Update) bool {
 		if u.Message != nil {
 			if u.Message.LeftChatMember != nil {
-				fmt.Println("BOT REMOVED FROM GROUP")
-				if u.Message.LeftChatMember.Username == "tripassistant_bot" {
+				if u.Message.LeftChatMember.Username == app.BotUsername {
 					return true
 				}
 			}

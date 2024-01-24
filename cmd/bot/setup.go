@@ -140,7 +140,7 @@ func loadEvnVariables() (*envVariables, error) {
 func initBot(token string) (*telego.Bot, error) {
 	log.Println("Starting bot...")
 
-	bot, err := telego.NewBot(token, telego.WithDefaultLogger(true, true))
+	bot, err := telego.NewBot(token, telego.WithDefaultDebugLogger())
 	if err != nil {
 		return nil, fmt.Errorf("error initializing bot: %v", err)
 	}
@@ -149,6 +149,8 @@ func initBot(token string) (*telego.Bot, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting bot user: %v", err)
 	}
+
+	app.BotUsername = botUser.Username
 
 	log.Println(fmt.Sprintf("Bot runs on @%s", botUser.Username))
 

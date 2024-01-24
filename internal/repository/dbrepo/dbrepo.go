@@ -16,6 +16,7 @@ type testDBRepo struct {
 	Client *firestore.Client
 }
 
+// NewFirestoreRepo creates a new instance of a repository.DatabaseRepo that uses Firestore as the backend database.
 func NewFirestoreRepo(client *firestore.Client, app *config.AppConfig) repository.DatabaseRepo {
 	return &firestoreDBRepo{
 		App:    app,
@@ -23,6 +24,7 @@ func NewFirestoreRepo(client *firestore.Client, app *config.AppConfig) repositor
 	}
 }
 
+// NewTestingFirestoreRepo creates a new instance of a repository.DatabaseRepo intended for testing purposes.
 func NewTestingFirestoreRepo(app *config.AppConfig) repository.DatabaseRepo {
 	return &testDBRepo{
 		App: app,

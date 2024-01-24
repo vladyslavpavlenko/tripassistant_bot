@@ -13,7 +13,7 @@ const (
 	requestTimeout = 3 * time.Second
 )
 
-// AddUser adds a user to the users collection
+// AddUser adds a user to the users collection.
 func (m *firestoreDBRepo) AddUser(user models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -32,7 +32,7 @@ func (m *firestoreDBRepo) AddUser(user models.User) error {
 	return nil
 }
 
-// GetAllUserIDs returns all the user IDs from users collection
+// GetAllUserIDs returns all the user IDs from users collection.
 func (m *firestoreDBRepo) GetAllUserIDs() ([]int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -62,7 +62,7 @@ func (m *firestoreDBRepo) GetAllUserIDs() ([]int64, error) {
 	return userIDs, nil
 }
 
-// DeleteUserByID deletes a user from the users collection based on its ID
+// DeleteUserByID deletes a user from the users collection based on its ID.
 func (m *firestoreDBRepo) DeleteUserByID(userID int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -78,7 +78,7 @@ func (m *firestoreDBRepo) DeleteUserByID(userID int64) error {
 	return nil
 }
 
-// CheckIfUserIsRegisteredByID checks whether a user is already registered in the users collection by their ID
+// CheckIfUserIsRegisteredByID checks whether a user is already registered in the users collection by their ID.
 func (m *firestoreDBRepo) CheckIfUserIsRegisteredByID(userID int64) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -96,8 +96,8 @@ func (m *firestoreDBRepo) CheckIfUserIsRegisteredByID(userID int64) (bool, error
 	return docSnapshot.Exists(), nil
 }
 
-// AddTrip adds a trip to the trips collection
-// Note: trip is a group chat
+// AddTrip adds a trip to the trips collection.
+// Note: trip is a group chat.
 func (m *firestoreDBRepo) AddTrip(trip models.Trip) error {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -116,8 +116,8 @@ func (m *firestoreDBRepo) AddTrip(trip models.Trip) error {
 	return nil
 }
 
-// DeleteTripByID deletes a trip from the trips collection based on its ID
-// Note: trip is a group chat
+// DeleteTripByID deletes a trip from the trips collection based on its ID.
+// Note: trip is a group chat.
 func (m *firestoreDBRepo) DeleteTripByID(tripID int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -133,8 +133,8 @@ func (m *firestoreDBRepo) DeleteTripByID(tripID int64) error {
 	return nil
 }
 
-// AddPlaceToListByTripID adds the place to the list of the trip identified by its ID
-// Note: trip is a group chat
+// AddPlaceToListByTripID adds the place to the list of the trip identified by its ID.
+// Note: trip is a group chat.
 func (m *firestoreDBRepo) AddPlaceToListByTripID(place models.Place, tripID int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*requestTimeout)
 	defer cancel()
@@ -158,8 +158,8 @@ func (m *firestoreDBRepo) AddPlaceToListByTripID(place models.Place, tripID int6
 	return nil
 }
 
-// GetTripPlacesListByID returns all the places from the trip by its ID
-// Note: trip is a group chat
+// GetTripPlacesListByID returns all the places from the trip by its ID.
+// Note: trip is a group chat.
 func (m *firestoreDBRepo) GetTripPlacesListByID(tripID int64) ([]models.Place, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -197,8 +197,8 @@ func (m *firestoreDBRepo) GetTripPlacesListByID(tripID int64) ([]models.Place, e
 	return tripPlaces, nil
 }
 
-// GetTripByID returns the trip by its ID
-// Note: trip is a group chat
+// GetTripByID returns the trip by its ID.
+// Note: trip is a group chat.
 func (m *firestoreDBRepo) GetTripByID(tripID int64) (models.Trip, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -240,8 +240,8 @@ func (m *firestoreDBRepo) GetTripByID(tripID int64) (models.Trip, error) {
 	return trip, nil
 }
 
-// DeleteTripPlacesListByID deletes trip places list by its ID
-// Note: trip is a group chat
+// DeleteTripPlacesListByID deletes trip places list by its ID.
+// Note: trip is a group chat.
 func (m *firestoreDBRepo) DeleteTripPlacesListByID(tripID int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -261,8 +261,8 @@ func (m *firestoreDBRepo) DeleteTripPlacesListByID(tripID int64) error {
 	return nil
 }
 
-// DeleteTripPlaceByTitle deletes a place from trip_places array by its title
-// Note: trip is a group chat
+// DeleteTripPlaceByTitle deletes a place from trip_places array by its title.
+// Note: trip is a group chat.
 func (m *firestoreDBRepo) DeleteTripPlaceByTitle(placeTitle string, tripID int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()

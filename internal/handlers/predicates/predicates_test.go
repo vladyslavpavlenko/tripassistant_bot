@@ -7,6 +7,8 @@ import (
 	"testing"
 )
 
+// Deprecated
+
 func TestAdmin(t *testing.T) {
 	tests := []struct {
 		name           string

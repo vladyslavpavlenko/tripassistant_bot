@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// ConfirmationRequest prompts the user to confirm some action
+// ConfirmationRequest prompts the user to confirm some action.
 func ConfirmationRequest(bot *telego.Bot, update telego.Update) {
 	inlineKeyboard := make([][]telego.InlineKeyboardButton, 0)
 	inlineKeyboard = append(inlineKeyboard, []telego.InlineKeyboardButton{})
@@ -28,7 +28,7 @@ func ConfirmationRequest(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(params)
 }
 
-// Error notifies the user about an error on the server side
+// Error notifies the user about an error on the server side.
 func Error(bot *telego.Bot, update telego.Update) {
 	messageParams := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
@@ -48,7 +48,7 @@ func Error(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendSticker(stickerParams)
 }
 
-// ThrottlingMessage notifies the user about the temporary throttling
+// ThrottlingMessage notifies the user about the temporary throttling.
 func ThrottlingMessage(bot *telego.Bot, update telego.Update) {
 	messageParams := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
@@ -59,7 +59,7 @@ func ThrottlingMessage(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(messageParams)
 }
 
-// ParsePost parses button text, button URL, and post text from a string
+// ParsePost parses button text, button URL, and post text from a string.
 func ParsePost(input string) (string, string, string, error) {
 	pattern := `b: "(.+)"\s+u: "(.+)"\s+t: "(.+)"`
 	re := regexp.MustCompile(pattern)

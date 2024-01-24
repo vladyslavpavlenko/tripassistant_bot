@@ -20,26 +20,26 @@ import (
 	"time"
 )
 
-// Repository is the Repository type
+// Repository is the Repository type.
 type Repository struct {
 	App *config.AppConfig
 	DB  repository.DatabaseRepo
 	API mapsapi.APIRepo
 }
 
-// Repo the Repository used by the handlers
+// Repo the Repository used by the handlers.
 var Repo *Repository
 
-// NewRepo creates a new Repository
-func NewRepo(a *config.AppConfig, fsClient *firestore.Client, gmClient *maps.Client) *Repository {
+// NewRepo creates a new Repository.
+func NewRepo(a *config.AppConfig, firestoreClient *firestore.Client, mapsClient *maps.Client) *Repository {
 	return &Repository{
 		App: a,
-		DB:  dbrepo.NewFirestoreRepo(fsClient, a),
-		API: googleapirepo.NewGoogleAPIRepo(gmClient, a),
+		DB:  dbrepo.NewFirestoreRepo(firestoreClient, a),
+		API: googleapirepo.NewGoogleAPIRepo(mapsClient, a),
 	}
 }
 
-// NewTestRepo creates a new Repository
+// NewTestRepo creates a new Repository.
 func NewTestRepo(a *config.AppConfig) *Repository {
 	return &Repository{
 		App: a,
@@ -48,12 +48,12 @@ func NewTestRepo(a *config.AppConfig) *Repository {
 	}
 }
 
-// NewHandlers sets the Repository for the handlers
+// NewHandlers sets the Repository for the handlers.
 func NewHandlers(r *Repository) {
 	Repo = r
 }
 
-// StartCommandHandler handles the /start command
+// StartCommandHandler handles the /start command.
 func (m *Repository) StartCommandHandler(bot *telego.Bot, update telego.Update) {
 	user := models.User{
 		UserID:   update.Message.From.ID,
@@ -85,7 +85,7 @@ func (m *Repository) StartCommandHandler(bot *telego.Bot, update telego.Update) 
 	_, _ = bot.SendMessage(params)
 }
 
-// HelpCommandHandler handles the /help command
+// HelpCommandHandler handles the /help command.
 func (m *Repository) HelpCommandHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
 		ChatID:                tu.ID(update.Message.Chat.ID),
@@ -101,12 +101,12 @@ func (m *Repository) HelpCommandHandler(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(params)
 }
 
-// AddPlaceCommandHandler handles the /addplace command
+// AddPlaceCommandHandler handles the /addplace command.
 func (m *Repository) AddPlaceCommandHandler(bot *telego.Bot, update telego.Update) {
 	var place models.Place
 
 	if update.Message.ReplyToMessage.Text != "" {
-		if len(update.Message.ReplyToMessage.Text) > 50 {
+		if len(update.Message.ReplyToMessage.Text) > 80 {
 			params := &telego.SendMessageParams{
 				ChatID:           tu.ID(update.Message.Chat.ID),
 				ReplyToMessageID: update.Message.MessageID,
@@ -122,7 +122,7 @@ func (m *Repository) AddPlaceCommandHandler(bot *telego.Bot, update telego.Updat
 		messageText := update.Message.ReplyToMessage.Text
 
 		var err error
-		place, err = m.API.GetPlace(messageText, update.Message.Chat.Title)
+		place, err = m.API.GetPlace(messageText) //, update.Message.Chat.Title)
 		if err != nil {
 			log.Println(fmt.Errorf("error parsing place from Places API: %s", err))
 			place = models.Place{
@@ -173,7 +173,7 @@ func (m *Repository) AddPlaceCommandHandler(bot *telego.Bot, update telego.Updat
 	_, _ = bot.SendSticker(params)
 }
 
-// RemovePlaceCommandHandler handles the /removeplace command
+// RemovePlaceCommandHandler handles the /removeplace command.
 func (m *Repository) RemovePlaceCommandHandler(bot *telego.Bot, update telego.Update) {
 	placeTitle := update.Message.ReplyToMessage.Text
 	tripID := update.Message.Chat.ID
@@ -194,7 +194,7 @@ func (m *Repository) RemovePlaceCommandHandler(bot *telego.Bot, update telego.Up
 	_, _ = bot.SendMessage(params)
 }
 
-// CommandMisuseHandler handles misuse of commands
+// CommandMisuseHandler handles misuse of commands.
 func (m *Repository) CommandMisuseHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
@@ -209,7 +209,7 @@ func (m *Repository) CommandMisuseHandler(bot *telego.Bot, update telego.Update)
 	_, _ = bot.SendMessage(params)
 }
 
-// AdminCommandMisuseHandler handles misuse of admin commands
+// AdminCommandMisuseHandler handles misuse of admin commands.
 func (m *Repository) AdminCommandMisuseHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
@@ -220,7 +220,7 @@ func (m *Repository) AdminCommandMisuseHandler(bot *telego.Bot, update telego.Up
 	_, _ = bot.SendMessage(params)
 }
 
-// CommandWrongChatHandler handles cases when commands are used in a private chat instead of a group
+// CommandWrongChatHandler handles cases when commands are used in a private chat instead of a group.
 func (m *Repository) CommandWrongChatHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
@@ -231,7 +231,7 @@ func (m *Repository) CommandWrongChatHandler(bot *telego.Bot, update telego.Upda
 	_, _ = bot.SendMessage(params)
 }
 
-// ShowListCommandHandler handles the /showlist command
+// ShowListCommandHandler handles the /showlist command.
 func (m *Repository) ShowListCommandHandler(bot *telego.Bot, update telego.Update) {
 	tripPlaces, err := m.DB.GetTripPlacesListByID(update.Message.Chat.ID)
 	if err != nil {
@@ -268,7 +268,7 @@ func (m *Repository) ShowListCommandHandler(bot *telego.Bot, update telego.Updat
 	_, _ = bot.SendMessage(params)
 }
 
-// ClearListCommandHandler handles the /clearlist command
+// ClearListCommandHandler handles the /clearlist command.
 func (m *Repository) ClearListCommandHandler(bot *telego.Bot, update telego.Update) {
 	err := m.DB.DeleteTripPlacesListByID(update.Message.Chat.ID)
 	if err != nil {
@@ -288,7 +288,7 @@ func (m *Repository) ClearListCommandHandler(bot *telego.Bot, update telego.Upda
 	_, _ = bot.SendSticker(params)
 }
 
-// RandomPlaceCommandHandler handles the /randomplace command
+// RandomPlaceCommandHandler handles the /randomplace command.
 func (m *Repository) RandomPlaceCommandHandler(bot *telego.Bot, update telego.Update) {
 	tripPlaces, err := m.DB.GetTripPlacesListByID(update.Message.Chat.ID)
 	if err != nil {
@@ -337,7 +337,7 @@ func (m *Repository) RandomPlaceCommandHandler(bot *telego.Bot, update telego.Up
 	}
 }
 
-// SendPostMessageHandler sends a post message
+// SendPostMessageHandler sends a post message.
 func (m *Repository) SendPostMessageHandler(bot *telego.Bot, update telego.Update) {
 	editedMessage := &telego.EditMessageTextParams{
 		ChatID:    tu.ID(update.CallbackQuery.Message.Chat.ID),
@@ -388,7 +388,7 @@ func (m *Repository) SendPostMessageHandler(bot *telego.Bot, update telego.Updat
 	}
 }
 
-// AdminPostCommandHandler handles the /post admin command
+// AdminPostCommandHandler handles the /post admin command.
 func (m *Repository) AdminPostCommandHandler(bot *telego.Bot, update telego.Update) {
 	msgText := update.Message.ReplyToMessage.Text
 	btnText, btnURL, text, err := helpers.ParsePost(msgText)
@@ -426,7 +426,7 @@ func (m *Repository) AdminPostCommandHandler(bot *telego.Bot, update telego.Upda
 	helpers.ConfirmationRequest(bot, update)
 }
 
-// UnknownCommandHandler handles unknown commands
+// UnknownCommandHandler handles unknown commands.
 func (m *Repository) UnknownCommandHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
@@ -441,7 +441,7 @@ func (m *Repository) UnknownCommandHandler(bot *telego.Bot, update telego.Update
 	_, _ = bot.SendMessage(params)
 }
 
-// AnyMessageHandler handles all the message that are not commands
+// AnyMessageHandler handles all the message that are not commands.
 func (m *Repository) AnyMessageHandler(bot *telego.Bot, update telego.Update) {
 	params := &telego.SendMessageParams{
 		ChatID:    tu.ID(update.Message.Chat.ID),
@@ -452,7 +452,7 @@ func (m *Repository) AnyMessageHandler(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(params)
 }
 
-// DatabaseDeleteUserHandler handles an update when the user needs to be deleted from the Repository
+// DatabaseDeleteUserHandler handles an update when the user needs to be deleted from the Repository.
 func (m *Repository) DatabaseDeleteUserHandler(bot *telego.Bot, update telego.Update) {
 	err := m.DB.DeleteUserByID(update.MyChatMember.From.ID)
 	if err != nil {
@@ -460,7 +460,7 @@ func (m *Repository) DatabaseDeleteUserHandler(bot *telego.Bot, update telego.Up
 	}
 }
 
-// DatabaseAddTripHandler handles an update when a trip needs to be added to the Repository
+// DatabaseAddTripHandler handles an update when a trip needs to be added to the Repository.
 func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Update) {
 	var chatID int64
 	var chatTitle string
@@ -500,7 +500,7 @@ func (m *Repository) DatabaseAddTripHandler(bot *telego.Bot, update telego.Updat
 	_, _ = bot.SendMessage(params)
 }
 
-// DatabaseDeleteTripHandler handles an update when the trip needs to be deleted from the Repository
+// DatabaseDeleteTripHandler handles an update when the trip needs to be deleted from the Repository.
 func (m *Repository) DatabaseDeleteTripHandler(bot *telego.Bot, update telego.Update) {
 	if update.Message != nil {
 		err := m.DB.DeleteTripByID(update.Message.Chat.ID)

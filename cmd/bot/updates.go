@@ -13,7 +13,8 @@ const (
 	throttleTimeWindow  = 6 * time.Second
 )
 
-// Note: handlers will match only once and in order of registration
+// registerUpdates configures the bot handlers and middleware for different chat contexts and commands.
+// Note: handlers will match only once and in order of registration.
 func registerUpdates(bh *th.BotHandler, redisClient *redis.Client) {
 	// Middleware
 	groupChat := bh.Group(th.Or(pd.GroupChat(), pd.SuperGroupChat()))
@@ -60,15 +61,15 @@ func registerUpdates(bh *th.BotHandler, redisClient *redis.Client) {
 	)
 
 	// Not recognized commands
-	bh.Handle(handlers.Repo.UnknownCommandHandler, th.AnyCommand())
+	bh.Handle(handlers.Repo.UnknownCommandHandler, th.And(th.AnyCommand(), th.TextContains(app.BotUsername)))
 
 	// Not commands
 	bh.Handle(handlers.Repo.AnyMessageHandler, th.And(th.AnyMessage(), pd.PrivateChat(), th.Not(pd.Admin(&app))))
 
 	// Database
 	bh.Handle(handlers.Repo.DatabaseDeleteUserHandler, th.And(pd.PrivateChat(), pd.BotBlocked()))
-	groupChat.Handle(handlers.Repo.DatabaseAddTripHandler, pd.BotAddedToGroup())
-	groupChat.Handle(handlers.Repo.DatabaseDeleteTripHandler, pd.BotRemovedFromGroup())
+	groupChat.Handle(handlers.Repo.DatabaseAddTripHandler, pd.BotAddedToGroup(&app))
+	groupChat.Handle(handlers.Repo.DatabaseDeleteTripHandler, pd.BotRemovedFromGroup(&app))
 
 	// Callbacks
 	bh.Handle(handlers.Repo.SendPostMessageHandler, th.CallbackDataContains("confirmation_pressed"))
