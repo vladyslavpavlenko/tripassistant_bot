@@ -11,8 +11,8 @@ import (
 
 const requestTimeout = 3 * time.Second
 
-// GetPlace returns the first place returned by the Google's Places API using Text Search
-// Note: uses message text and the name of the group for more relevant search results
+// GetPlace returns the first place returned by the Google's Places API using Text Search.
+// Note: uses message text and the name of the group for more relevant search results.
 func (m *googleAPIRepo) GetPlace(placeTitle string, options ...string) (models.Place, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
