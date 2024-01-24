@@ -140,7 +140,7 @@ func loadEvnVariables() (*envVariables, error) {
 func initBot(token string) (*telego.Bot, error) {
 	log.Println("Starting bot...")
 
-	bot, err := telego.NewBot(token, telego.WithDefaultDebugLogger())
+	bot, err := telego.NewBot(token, telego.WithDefaultLogger(false, true))
 	if err != nil {
 		return nil, fmt.Errorf("error initializing bot: %v", err)
 	}

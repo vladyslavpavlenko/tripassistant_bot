@@ -73,9 +73,10 @@ func (m *Repository) StartCommandHandler(bot *telego.Bot, update telego.Update) 
 	}
 
 	params := &telego.SendMessageParams{
-		ChatID:    tu.ID(update.Message.Chat.ID),
-		Text:      responses.StartResponse,
-		ParseMode: "HTML",
+		ChatID:                tu.ID(update.Message.Chat.ID),
+		Text:                  responses.StartResponse,
+		ParseMode:             "HTML",
+		DisableWebPagePreview: true,
 	}
 
 	if update.Message.Chat.Type == "group" || update.Message.Chat.Type == "supergroup" {
