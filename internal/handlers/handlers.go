@@ -72,15 +72,19 @@ func (m *Repository) StartCommandHandler(bot *telego.Bot, update telego.Update) 
 		}
 	}
 
+	inlineKeyboard := make([][]telego.InlineKeyboardButton, 0)
+	inlineKeyboard = append(inlineKeyboard, []telego.InlineKeyboardButton{})
+	inlineKeyboard[0] = append(inlineKeyboard[0], telego.InlineKeyboardButton{
+		Text: "Add to Group",
+		URL:  fmt.Sprintf("https://t.me/%s?startgroup=from_private", m.App.BotUsername),
+	})
+
 	params := &telego.SendMessageParams{
 		ChatID:                tu.ID(update.Message.Chat.ID),
 		Text:                  responses.StartResponse,
 		ParseMode:             "HTML",
+		ReplyMarkup:           &telego.InlineKeyboardMarkup{InlineKeyboard: inlineKeyboard},
 		DisableWebPagePreview: true,
-	}
-
-	if update.Message.Chat.Type == "group" || update.Message.Chat.Type == "supergroup" {
-		params.ReplyToMessageID = update.Message.MessageID
 	}
 
 	_, _ = bot.SendMessage(params)

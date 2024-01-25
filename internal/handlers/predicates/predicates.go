@@ -83,9 +83,12 @@ func BotBlocked() th.Predicate {
 func BotAddedToGroup(app *config.AppConfig) th.Predicate {
 	return func(u telego.Update) bool {
 		if u.MyChatMember != nil {
-			if u.MyChatMember.NewChatMember.MemberUser().Username == app.BotUsername &&
-				u.MyChatMember.NewChatMember.MemberStatus() != telego.MemberStatusLeft &&
-				u.MyChatMember.OldChatMember.MemberStatus() == telego.MemberStatusLeft {
+			newMemberUsername := u.MyChatMember.NewChatMember.MemberUser().Username
+			newMemberStatus := u.MyChatMember.NewChatMember.MemberStatus()
+			oldMemberStatus := u.MyChatMember.OldChatMember.MemberStatus()
+
+			if newMemberUsername == app.BotUsername && newMemberStatus != telego.MemberStatusLeft &&
+				(oldMemberStatus == telego.MemberStatusLeft || oldMemberStatus == telego.MemberStatusBanned) {
 				return true
 			}
 		}

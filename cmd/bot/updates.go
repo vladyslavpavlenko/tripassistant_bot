@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
 	"github.com/redis/go-redis/v9"
 	"github.com/vladyslavpavlenko/tripassistant_bot/internal/handlers"
@@ -24,8 +25,9 @@ func registerUpdates(bh *th.BotHandler, redisClient *redis.Client) {
 	bh.Use(Throttling(redisClient, throttleMaxRequests, throttleTimeWindow))
 
 	// Global commands
-	bh.Handle(handlers.Repo.StartCommandHandler, th.CommandEqual("start"))
-	bh.Handle(handlers.Repo.HelpCommandHandler, th.CommandEqual("help"))
+	bh.Handle(handlers.Repo.StartCommandHandler, th.And(th.CommandEqual("start"), pd.PrivateChat()))
+	bh.Handle(handlers.Repo.HelpCommandHandler, th.CommandEqual("help"), th.Or(pd.PrivateChat(),
+		th.TextContains(app.BotUsername)))
 
 	groupChat.Handle(handlers.Repo.AddPlaceCommandHandler, th.And(th.CommandEqual("addplace"), pd.Reply()))
 	groupChat.Handle(handlers.Repo.RemovePlaceCommandHandler, th.And(th.CommandEqual("removeplace"), pd.Reply()))
@@ -35,11 +37,13 @@ func registerUpdates(bh *th.BotHandler, redisClient *redis.Client) {
 
 	groupChat.Handle(handlers.Repo.CommandMisuseHandler,
 		th.Or(
-			th.CommandEqual("post"),
 			th.CommandEqual("addplace"),
 			th.CommandEqual("removeplace"),
 		),
 	)
+
+	// Ignore /start in group chats
+	groupChat.Handle(func(bot *telego.Bot, update telego.Update) {}, th.CommandEqual("start"))
 
 	bh.Handle(handlers.Repo.CommandWrongChatHandler,
 		th.Or(
