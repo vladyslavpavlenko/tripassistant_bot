@@ -39,7 +39,7 @@ type envVariables struct {
 
 // redisSettings holds settings for connecting to Redis.
 type redisSettings struct {
-	Addr string `env:"REDIS_ADDR"`
+	Addr string `env:"REDISCLOUD_URL"`
 	User string `env:"REDIS_USER"`
 	Pass string `env:"REDIS_PASS"`
 }
@@ -109,7 +109,7 @@ func loadEvnVariables() (*envVariables, error) {
 
 	mapsAPIKey := os.Getenv("MAPS_API_KEY")
 
-	redisAddr := os.Getenv("REDIS_ADDR")
+	redisAddr := os.Getenv("REDISCLOUD_URL")
 	redisUser := os.Getenv("REDIS_USER")
 	redisPass := os.Getenv("REDIS_PASS")
 
