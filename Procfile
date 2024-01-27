@@ -1,1 +1,1 @@
-worker: ./run.sh
+worker: go build -o bot cmd/bot/*.go
