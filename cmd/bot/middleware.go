@@ -54,8 +54,6 @@ func Throttling(redisClient *redis.Client, maxRequests int64, timeWindow time.Du
 // If a user is not registered, it adds the user to the database.
 func IsRegistered(m *handlers.Repository) th.Middleware {
 	return func(bot *telego.Bot, update telego.Update, next th.Handler) {
-		fmt.Println(fmt.Sprintf("%sUsing isRegistered middleware%s ", "\u001B[31m", "\u001B[0m"))
-
 		registered, err := m.DB.CheckIfUserIsRegisteredByID(update.Message.From.ID)
 		if err != nil {
 			log.Println(err)
