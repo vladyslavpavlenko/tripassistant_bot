@@ -5,7 +5,6 @@ import (
 	"context"
 	firebase "firebase.google.com/go"
 	"fmt"
-	"github.com/joho/godotenv"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
 	"github.com/redis/go-redis/v9"
@@ -97,10 +96,10 @@ func setup() (*appServices, error) {
 }
 
 func loadEvnVariables() (*envVariables, error) {
-	err := godotenv.Load()
-	if err != nil {
-		return nil, fmt.Errorf("error getting environment variables: %v", err)
-	}
+	//err := godotenv.Load()
+	//if err != nil {
+	//	return nil, fmt.Errorf("error getting environment variables: %v", err)
+	//}
 
 	// Get environment variables
 	botToken := os.Getenv("BOT_TOKEN")
