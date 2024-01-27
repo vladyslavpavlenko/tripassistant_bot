@@ -30,16 +30,16 @@ type appServices struct {
 
 // envVariables holds environment variables used in the application.
 type envVariables struct {
-	BotToken     string   `env:"BOT_TOKEN"`
-	AdminIDs     []string `env:"ADMIN_IDS,split"`
-	FirebasePath string   `env:"FIREBASE_PATH"`
-	MapsAPIKey   string   `env:"MAPS_API_KEY"`
-	Redis        *redisSettings
+	BotToken       string   `env:"BOT_TOKEN"`
+	AdminIDs       []string `env:"ADMIN_IDS,split"`
+	FirebaseConfig string   `env:"FIREBASE_CONFIG"`
+	MapsAPIKey     string   `env:"MAPS_API_KEY"`
+	Redis          *redisSettings
 }
 
 // redisSettings holds settings for connecting to Redis.
 type redisSettings struct {
-	Addr string `env:"REDISCLOUD_URL"`
+	Addr string `env:"REDIS_ADDR"`
 	User string `env:"REDIS_USER"`
 	Pass string `env:"REDIS_PASS"`
 }
@@ -59,7 +59,7 @@ func setup() (*appServices, error) {
 	}
 
 	// Connect to Firestore
-	firestoreClient, err := connectToFirestore(env.FirebasePath)
+	firestoreClient, err := connectToFirestore(env.FirebaseConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func setup() (*appServices, error) {
 	}
 
 	// Connect to Redis
-	redisClient, err := connectToRedis(env.Redis.Addr, env.Redis.User, env.Redis.Pass)
+	redisClient, err := connectToRedis(env.Redis)
 	if err != nil {
 		return nil, err
 	}
@@ -105,11 +105,11 @@ func loadEvnVariables() (*envVariables, error) {
 	// Get environment variables
 	botToken := os.Getenv("BOT_TOKEN")
 
-	firebasePath := os.Getenv("FIREBASE_PATH")
+	firebaseConfig := os.Getenv("FIREBASE_CONFIG")
 
 	mapsAPIKey := os.Getenv("MAPS_API_KEY")
 
-	redisAddr := os.Getenv("REDISCLOUD_URL")
+	redisAddr := os.Getenv("REDIS_ADDR")
 	redisUser := os.Getenv("REDIS_USER")
 	redisPass := os.Getenv("REDIS_PASS")
 
@@ -125,9 +125,9 @@ func loadEvnVariables() (*envVariables, error) {
 	}
 
 	return &envVariables{
-		BotToken:     botToken,
-		FirebasePath: firebasePath,
-		MapsAPIKey:   mapsAPIKey,
+		BotToken:       botToken,
+		FirebaseConfig: firebaseConfig,
+		MapsAPIKey:     mapsAPIKey,
 		Redis: &redisSettings{
 			Addr: redisAddr,
 			User: redisUser,
@@ -158,10 +158,10 @@ func initBot(token string) (*telego.Bot, error) {
 }
 
 // connectToFirestore initializes a connection to the Firestore database using the given configuration path.
-func connectToFirestore(configPath string) (*firestore.Client, error) {
+func connectToFirestore(config string) (*firestore.Client, error) {
 	log.Println("Connecting to Firestore...")
 
-	opt := option.WithCredentialsFile(configPath)
+	opt := option.WithCredentialsJSON([]byte(config))
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing Firebase app: %v", err)
@@ -193,13 +193,13 @@ func connectToGoogleMapsPlatform(APIKey string) (*maps.Client, error) {
 }
 
 // connectToRedis initializes a connection to the Redis using the given settings.
-func connectToRedis(addr string, username string, password string) (*redis.Client, error) {
+func connectToRedis(rs *redisSettings) (*redis.Client, error) {
 	log.Println("Connecting to Redis...")
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Username: username,
-		Password: password,
+		Addr:     rs.Addr,
+		Username: rs.User,
+		Password: rs.Pass,
 	})
 
 	_, err := client.Ping(context.Background()).Result()
