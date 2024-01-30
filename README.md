@@ -1,5 +1,11 @@
 # Trip Assistant
 
+
+
+https://github.com/vladyslavpavlenko/tripassistant_bot/assets/80064533/e29a3b13-a145-4afd-84ec-f36ab868860b
+
+
+
 ## About
 A simple trip management Telegram bot that allows you to create lists of places to visit. Currently, it's intended to work in groups only.
 
